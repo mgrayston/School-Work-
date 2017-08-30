@@ -9,9 +9,10 @@ namespace Lab1 {
         /// <summary>
         /// Prints "Hello, World!" to console.
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">No args</param>
         static void Main(string[] args) {
             Console.WriteLine("Hello, World!");
+            Console.WriteLine("My name is Jarvis!");
         }
     }
 }
