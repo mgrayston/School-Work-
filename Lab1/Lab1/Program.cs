@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 namespace Lab1 {
     class Program {
         /// <summary>
-        /// Prints "Hello, World!" to console.
+        /// Prints "Hello, World!"
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">No args</param>
         static void Main(string[] args) {
             Console.WriteLine("Hello, World!");
+            Console.WriteLine("My name is Jarvis.");
         }
     }
 }
