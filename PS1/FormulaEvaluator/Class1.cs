@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace FormulaEvaluator {
     public static class Evaluator {
@@ -37,11 +35,22 @@ namespace FormulaEvaluator {
 
                     // '+' and '-' operators
                     else if (Regex.IsMatch(tokens[token], "\\+|\\-")) {
+                        if (token == 0 || token == tokens.Length) {
+                            throw new ArgumentException();
+                        }
                         // TODO
                     }
 
                     // '*' and '/' operators
                     else if (Regex.IsMatch(tokens[token], "\\/|\\*")) {
+                        if (token == 0 || token == tokens.Length) {
+                            throw new ArgumentException();
+                        }
+                        // TODO
+                    }
+
+                    // parentheses
+                    else if (Regex.IsMatch(tokens[token], "\\(|\\)")) {
                         // TODO
                     }
 
