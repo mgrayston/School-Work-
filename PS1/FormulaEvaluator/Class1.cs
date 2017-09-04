@@ -28,13 +28,8 @@ namespace FormulaEvaluator {
                 Regex.Replace(tokens[token], "\\s+", "");
 
                 if (!tokens[token].Equals("")) {
-                    // throw exception for invalid variable name
-                    if (Regex.IsMatch(tokens[token], "\\d+[a-zA-Z]+")) {    // add for ONLY a letter (a-zA-Z anchored at beginning and end
-                        throw new ArgumentException();
-                    }
-
                     // '+' and '-' operators
-                    else if (Regex.IsMatch(tokens[token], "\\+|\\-")) {
+                    if (Regex.IsMatch(tokens[token], "\\+|\\-")) {
                         if (token == 0 || token == tokens.Length) {
                             throw new ArgumentException();
                         }
@@ -55,12 +50,16 @@ namespace FormulaEvaluator {
                     }
 
                     // variables
-                    else if (Regex.IsMatch(tokens[token], "[a-zA-Z]+\\d+")) {   // add rule for there not being anything before or after
+                    else if (Regex.IsMatch(tokens[token], "[a-zA-Z]+\\d+")) {   // double check on what valid variables are/if this code should catch it
+                        // throw exception for invalid variable name
+                        if (Regex.IsMatch(tokens[token], "[a-zA-Z]?\\d+[a-zA-Z]+\\d?")) {
+                            throw new ArgumentException();
+                        }
                         // TODO
                     }
 
                     // digits
-                    else if (Regex.IsMatch(tokens[token], "\\d+")) {    // add rule for nothing before or after
+                    else if (Regex.IsMatch(tokens[token], "\\d+")) {
                         // TODO
                     }
                 }
