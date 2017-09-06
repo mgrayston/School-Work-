@@ -74,14 +74,11 @@ namespace EvaluatorTests {
                 Console.WriteLine("Passed");
             }
             else {
-                Console.WriteLine("Failed");
+                Console.WriteLine("***Failed***");
             }
         }
 
         static void Main(string[] args) {
-            // We can invoke the evaluator with a simple static Lookup method, like so
-            Console.WriteLine(Evaluator.Evaluate("1 + 2 + B4", simpleLookup));
-
             // Or we can make an object to hold variable values
             // See the definition of FakeSpreadsheet below
             FakeSpreadsheet sheet = new FakeSpreadsheet();
@@ -91,25 +88,33 @@ namespace EvaluatorTests {
             sheet.SetCell("A2", 100);
             sheet.SetCell("a4", 3);
 
-            // Then invoke the evaluator with sheet's GetCell method acting as the Lookup delegate
-            Console.WriteLine(Evaluator.Evaluate("1 + 2 + A1", sheet.GetCell));
-
-
-            // Here we will use the ValidTest method to display helpful information in the console
+            // Valid tests
             Test("Order of operations test", ValidTest("2 + 6 * a4", sheet.GetCell, 20));
-
+            Test("Order of operations test 2", ValidTest("2 / 20* 80 - (12/6) +2", simpleLookup, 0));
+            Test("Order of operations test 3", ValidTest("(1+2)*2/3", null, 2));
+            Test("Order of operations zero test", ValidTest("0*((1+2*2/(2+1))*100000000 + 9999)", null, 0));
             Test("Order of operations with parenthesis test", ValidTest("(2+6)*a4", sheet.GetCell, 24));
-
             Test("Several operations inside parenthesis test", ValidTest("2+(3+5*9)", sheet.GetCell, 50));
+            Test("Consecutive operators test", ValidTest("1+(3/2)", simpleLookup, 2));
+            Test("Valid variable name test", ValidTest("B4", simpleLookup, 17));
+            Test("Nested parentheses test", ValidTest("(((((((((((((B4)))))))))))))", simpleLookup, 17));
+            Test("Valid sheet lookup", ValidTest("a4", sheet.GetCell, 3));
 
-
-            // The same thing can be done using the InvalidTest method
-            Test("Division by 0 test", InvalidTest("5/0", sheet.GetCell));
-
-            Test("Invalid variable name test", InvalidTest("5+xx", sheet.GetCell));
-
+            // Invalid tests
+            Test("Consecutive operators test 1", InvalidTest("1//2", simpleLookup));
+            Test("Consecutive operators test 2", InvalidTest("1+/2", simpleLookup));
+            Test("Consecutive operators test 3", InvalidTest("1+(2/3*)", simpleLookup));
+            Test("Division by 0 test 1", InvalidTest("5/0", sheet.GetCell));
+            Test("Division by 0 test 2", InvalidTest("5 * B4 + (7-4)/((4/2)-2)", sheet.GetCell));
             Test("Misplaced operator test", InvalidTest("2+5+", sheet.GetCell));
-
+            Test("Invalid variable name test 1", InvalidTest("2+AB", simpleLookup));
+            Test("Invalid variable name test 2", InvalidTest("2+AB123ac", simpleLookup));
+            Test("Invalid variable name test 3", InvalidTest("2+123AB", simpleLookup));
+            Test("Invalid variable name test 4", InvalidTest("2+123AB123", simpleLookup));
+            Test("Invalid variable name test 5", InvalidTest("b3", simpleLookup));
+            Test("Misplaced parenthesis test 1", InvalidTest("1+2*((3)", null));
+            Test("Misplaced parenthesis test 2", InvalidTest("1+2*(3))", null));
+            Test("Invalid sheet lookup", InvalidTest("A4", sheet.GetCell));
 
             // Pause the console
             Console.Read();
@@ -158,25 +163,3 @@ namespace EvaluatorTests {
         }
     }
 }
-
-
-
-
-// Pseudocode for Evaluate
-// Your real Evaluate method will go in another file, in your FormulaEvaluator project
-/* 
-public static int Evaluate(String exp, Lookup variableEvaluator)
-{
-    split exp in to tokens
-    foreach token
-      remove leading and trailing whitespace from token
-      if(token is number)
-        ... follow algorithm
-      if(token is '+')
-        ... follow algorithm     
-
-      if(token is variable)
-        val = variableEvaluator(token)
-        ... follow algorithm
-}
-*/
