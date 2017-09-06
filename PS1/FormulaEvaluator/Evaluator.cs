@@ -25,206 +25,210 @@ namespace FormulaEvaluator {
             // push all tokens onto stacks
             foreach (int token in Enumerable.Range(0, tokens.Length)) {
                 // eliminate extra whitespace
-                Regex.Replace(tokens[token], "\\s+", "");
+                tokens[token] = Regex.Replace(tokens[token], "\\s+", "");
 
-                if (!tokens[token].Equals("")) {
-                    // digits
-                    if (Regex.IsMatch(tokens[token], "\\d+")) {
+                // empty token
+                if (tokens[token].Equals("")) {
+                    continue;
+                }
 
-                        // '*' operator is next
-                        if (operators.IsOnTop("\\*")) {
-                            // no more operands to apply operator to
-                            if (operands.Count == 0) {
-                                throw new ArgumentException();
-                            }
+                // digits
+                if (Regex.IsMatch(tokens[token], "^\\d+$")) {
 
-                            operators.Pop();
-                            int val = int.Parse(operands.Pop());
-                            operands.Push((val * int.Parse(tokens[token])).ToString());
-                        }
-
-                        // '/' operator is next
-                        else if (operators.IsOnTop("/")) {
-                            // no more operands to apply operator to
-                            if (operands.Count == 0) {
-                                throw new ArgumentException();
-                            }
-
-                            // division by zero
-                            if (operands.IsOnTop("^0+$")) {
-                                throw new ArgumentException();
-                            }
-
-                            operators.Pop();
-                            int val = int.Parse(operands.Pop());
-                            operands.Push((val / int.Parse(tokens[token])).ToString());
-                        }
-
-                        else {
-                            operands.Push(tokens[token]);
-                        }
-                    }
-
-                    // variables
-                    else if (Regex.IsMatch(tokens[token], "[a-zA-Z]+\\d+")) {   // double check on what valid variables are/if this code should catch it
-                        // throw exception for invalid variable name
-                        if (Regex.IsMatch(tokens[token], "[a-zA-Z]?\\d+[a-zA-Z]+\\d?")) {
+                    // '*' operator is next
+                    if (operators.IsOnTop("\\*")) {
+                        // no more operands to apply operator to
+                        if (operands.Count == 0) {
                             throw new ArgumentException();
                         }
 
-                        // lookup value of variable
-                        int t = variableEvaluator(tokens[token]);
-
-                        // '*' operator is next
-                        if (operators.IsOnTop("\\*")) {
-                            // no more operands to apply operator to
-                            if (operands.Count == 0) {
-                                throw new ArgumentException();
-                            }
-
-                            operators.Pop();
-                            int val = int.Parse(operands.Pop());
-                            operands.Push((val * t).ToString());
-                        }
-
-                        // '/' operator is next
-                        else if (operators.IsOnTop("/")) {
-                            // no more operands to apply operator to
-                            if (operands.Count == 0) {
-                                throw new ArgumentException();
-                            }
-
-                            // division by zero
-                            if (operands.IsOnTop("^0+$")) {
-                                throw new ArgumentException();
-                            }
-
-                            operators.Pop();
-                            int val = int.Parse(operands.Pop());
-                            operands.Push((val / t).ToString());
-                        }
-
-                        else {
-                            operands.Push(t.ToString());
-                        }
+                        operators.Pop();
+                        int val = int.Parse(operands.Pop());
+                        operands.Push((val * int.Parse(tokens[token])).ToString());
                     }
 
-                    // '+' and '-' operators
-                    else if (Regex.IsMatch(tokens[token], "\\+|-")) {
-                        // token is at beginning or end, or is preceded or followed by another operator
-                        if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
+                    // '/' operator is next
+                    else if (operators.IsOnTop("/")) {
+                        // no more operands to apply operator to
+                        if (operands.Count == 0) {
                             throw new ArgumentException();
                         }
 
-                        if (operators.IsOnTop("\\+")) {
-                            // not enough operands
-                            if (operands.Count < 2) {
-                                throw new ArgumentException();
-                            }
-
-                            operators.Pop();
-
-                            int val2 = int.Parse(operands.Pop());
-                            int val1 = int.Parse(operands.Pop());
-                            operands.Push((val1 + val2).ToString());
-                        }
-
-                        else if (operators.IsOnTop("-")) {
-                            // not enough operands
-                            if (operands.Count < 2) {
-                                throw new ArgumentException();
-                            }
-
-                            operators.Pop();
-
-                            int val2 = int.Parse(operands.Pop());
-                            int val1 = int.Parse(operands.Pop());
-                            operands.Push((val1 - val2).ToString());
-                        }
-
-                        operators.Push(tokens[token]);
-                    }
-
-                    // '*' and '/' operators
-                    else if (Regex.IsMatch(tokens[token], "/|\\*")) {
-                        // token is at beginning or end, or is preceded or followed by another operator
-                        if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
+                        // division by zero
+                        if (operands.IsOnTop("^0+$")) {
                             throw new ArgumentException();
                         }
 
-                        operators.Push(tokens[token]);
+                        operators.Pop();
+                        int val = int.Parse(operands.Pop());
+                        operands.Push((val / int.Parse(tokens[token])).ToString());
                     }
 
-                    // left parenthesis
-                    else if (Regex.IsMatch(tokens[token], "\\(")) {
-                        operators.Push(tokens[token]);
+                    else {
+                        operands.Push(tokens[token]);
+                    }
+                }
+
+                // variables
+                else if (Regex.IsMatch(tokens[token], "[a-zA-Z]+\\d+")) {   // double check on what valid variables are/if this code should catch it
+                                                                            // throw exception for invalid variable name
+                    if (Regex.IsMatch(tokens[token], "[a-zA-Z]?\\d+[a-zA-Z]+\\d?")) {
+                        throw new ArgumentException();
                     }
 
-                    // right parenthesis
-                    else if (Regex.IsMatch(tokens[token], "\\)")) {
-                        // next operator is '+'
-                        if (operators.IsOnTop("\\+")) {
-                            // too few operands
-                            if (operands.Count < 2) {
-                                throw new ArgumentException();
-                            }
+                    // lookup value of variable
+                    int t = variableEvaluator(tokens[token]);
 
-                            int val2 = int.Parse(operands.Pop());
-                            int val1 = int.Parse(operands.Pop());
-                            operators.Pop();
-                            operands.Push((val1 + val2).ToString());
-                        }
-
-                        // next operator is '-'
-                        else if (operators.IsOnTop("-")) {
-                            // too few operands
-                            if (operands.Count < 2) {
-                                throw new ArgumentException();
-                            }
-
-                            int val2 = int.Parse(operands.Pop());
-                            int val1 = int.Parse(operands.Pop());
-                            operators.Pop();
-                            operands.Push((val1 - val2).ToString());
-                        }
-
-                        // next operator SHOULD be '('
-                        if (!operators.IsOnTop("\\(")) {
+                    // '*' operator is next
+                    if (operators.IsOnTop("\\*")) {
+                        // no more operands to apply operator to
+                        if (operands.Count == 0) {
                             throw new ArgumentException();
-                        } else {
-                            operators.Pop();
                         }
 
-                        // '*' operator is next
-                        if (operators.IsOnTop("\\*")) {
-                            // no more operands to apply operator to
-                            if (operands.Count < 2) {
-                                throw new ArgumentException();
-                            }
+                        operators.Pop();
+                        int val = int.Parse(operands.Pop());
+                        operands.Push((val * t).ToString());
+                    }
 
-                            operators.Pop();
-                            int val2 = int.Parse(operands.Pop());
-                            int val1 = int.Parse(operands.Pop());
-                            operands.Push((val1 * val2).ToString());
+                    // '/' operator is next
+                    else if (operators.IsOnTop("/")) {
+                        // no more operands to apply operator to
+                        if (operands.Count == 0) {
+                            throw new ArgumentException();
                         }
 
-                        // '/' operator is next
-                        else if (operators.IsOnTop("/")) {
-                            // no more operands to apply operator to
-                            if (operands.Count < 2) {
-                                throw new ArgumentException();
-                            }
-
-                            // division by zero
-                            if (operands.IsOnTop("^0+$")) {
-                                throw new ArgumentException();
-                            }
-
-                            operators.Pop();
-                            int val2 = int.Parse(operands.Pop());
-                            int val1 = int.Parse(operands.Pop());
-                            operands.Push((val1/val2).ToString());
+                        // division by zero
+                        if (operands.IsOnTop("^0+$")) {
+                            throw new ArgumentException();
                         }
+
+                        operators.Pop();
+                        int val = int.Parse(operands.Pop());
+                        operands.Push((val / t).ToString());
+                    }
+
+                    else {
+                        operands.Push(t.ToString());
+                    }
+                }
+
+                // '+' and '-' operators
+                else if (Regex.IsMatch(tokens[token], "\\+|-")) {
+                    // token is at beginning or end, or is preceded or followed by another operator
+                    if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
+                        throw new ArgumentException();
+                    }
+
+                    if (operators.IsOnTop("\\+")) {
+                        // not enough operands
+                        if (operands.Count < 2) {
+                            throw new ArgumentException();
+                        }
+
+                        operators.Pop();
+
+                        int val2 = int.Parse(operands.Pop());
+                        int val1 = int.Parse(operands.Pop());
+                        operands.Push((val1 + val2).ToString());
+                    }
+
+                    else if (operators.IsOnTop("-")) {
+                        // not enough operands
+                        if (operands.Count < 2) {
+                            throw new ArgumentException();
+                        }
+
+                        operators.Pop();
+
+                        int val2 = int.Parse(operands.Pop());
+                        int val1 = int.Parse(operands.Pop());
+                        operands.Push((val1 - val2).ToString());
+                    }
+
+                    operators.Push(tokens[token]);
+                }
+
+                // '*' and '/' operators
+                else if (Regex.IsMatch(tokens[token], "/|\\*")) {
+                    // token is at beginning or end, or is preceded or followed by another operator
+                    if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
+                        throw new ArgumentException();
+                    }
+
+                    operators.Push(tokens[token]);
+                }
+
+                // left parenthesis
+                else if (Regex.IsMatch(tokens[token], "\\(")) {
+                    operators.Push(tokens[token]);
+                }
+
+                // right parenthesis
+                else if (Regex.IsMatch(tokens[token], "\\)")) {
+                    // next operator is '+'
+                    if (operators.IsOnTop("\\+")) {
+                        // too few operands
+                        if (operands.Count < 2) {
+                            throw new ArgumentException();
+                        }
+
+                        int val2 = int.Parse(operands.Pop());
+                        int val1 = int.Parse(operands.Pop());
+                        operators.Pop();
+                        operands.Push((val1 + val2).ToString());
+                    }
+
+                    // next operator is '-'
+                    else if (operators.IsOnTop("-")) {
+                        // too few operands
+                        if (operands.Count < 2) {
+                            throw new ArgumentException();
+                        }
+
+                        int val2 = int.Parse(operands.Pop());
+                        int val1 = int.Parse(operands.Pop());
+                        operators.Pop();
+                        operands.Push((val1 - val2).ToString());
+                    }
+
+                    // next operator SHOULD be '('
+                    if (!operators.IsOnTop("\\(")) {
+                        throw new ArgumentException();
+                    }
+                    else {
+                        operators.Pop();
+                    }
+
+                    // '*' operator is next
+                    if (operators.IsOnTop("\\*")) {
+                        // no more operands to apply operator to
+                        if (operands.Count < 2) {
+                            throw new ArgumentException();
+                        }
+
+                        operators.Pop();
+                        int val2 = int.Parse(operands.Pop());
+                        int val1 = int.Parse(operands.Pop());
+                        operands.Push((val1 * val2).ToString());
+                    }
+
+                    // '/' operator is next
+                    else if (operators.IsOnTop("/")) {
+                        // no more operands to apply operator to
+                        if (operands.Count < 2) {
+                            throw new ArgumentException();
+                        }
+
+                        // division by zero
+                        if (operands.IsOnTop("^0+$")) {
+                            throw new ArgumentException();
+                        }
+
+                        operators.Pop();
+                        int val2 = int.Parse(operands.Pop());
+                        int val1 = int.Parse(operands.Pop());
+                        operands.Push((val1 / val2).ToString());
                     }
                 }
             }
