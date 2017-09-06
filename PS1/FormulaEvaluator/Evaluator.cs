@@ -4,8 +4,16 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace FormulaEvaluator {
+    /// <summary>
+    /// Class for evaluating given arithmetic expressions, returning the answer.
+    /// </summary>
     public static class Evaluator {
 
+        /// <summary>
+        /// Delegate used for looking up variables in the given expression.
+        /// </summary>
+        /// <param name="v">Variable to lookup</param>
+        /// <returns></returns>
         public delegate int Lookup(String v);
 
         /// <summary>
@@ -20,23 +28,23 @@ namespace FormulaEvaluator {
             Stack<String> operands = new Stack<String>();
             Stack<String> operators = new Stack<String>();
 
-            // push all tokens onto stacks
+            // Iterate through all tokens and process them accordingly
             foreach (int token in Enumerable.Range(0, tokens.Length)) {
-                // eliminate extra whitespace
+                // Trim extra whitespace
                 tokens[token] = Regex.Replace(tokens[token], "^\\s+", "");
                 tokens[token] = Regex.Replace(tokens[token], "\\s+$", "");
 
-                // catch invalid tokens with whitespace in the middle
+                // Catch invalid tokens with whitespace in the middle
                 if (Regex.IsMatch(tokens[token], "\\s+")) {
                     throw new ArgumentException("Invalid token: " + tokens[token]);
                 }
 
-                // continue on empty token
+                // Continue on empty token
                 if (tokens[token].Equals("")) {
                     continue;
                 }
 
-                // digits
+                // Digits
                 if (Regex.IsMatch(tokens[token], "^\\d+$")) {
                     // '*' operator is next
                     if (operators.IsOnTop("\\*")) {
@@ -48,19 +56,20 @@ namespace FormulaEvaluator {
                         divide(tokens[token]);
                     }
 
+                    // No current operators to deal with; pushes token onto the operand stack
                     else {
                         operands.Push(tokens[token]);
                     }
                 }
 
-                // variables
+                // Variables
                 else if (Regex.IsMatch(tokens[token], "[a-zA-Z]+\\d+")) {
-                    // throw exception for invalid variable name
+                    // Throw exception for invalid variable name
                     if (Regex.IsMatch(tokens[token], "[a-zA-Z]?\\d+[a-zA-Z]+\\d?")) {
                         throw new ArgumentException("Invalid variable: " + tokens[token]);
                     }
 
-                    // lookup value of variable
+                    // Lookup value of variable
                     int varResult = variableEvaluator(tokens[token]);
 
                     // '*' operator is next
@@ -73,6 +82,7 @@ namespace FormulaEvaluator {
                         divide(varResult.ToString());
                     }
 
+                    // No current operators to deal with; pushes token onto the operand stack
                     else {
                         operands.Push(varResult.ToString());
                     }
@@ -80,7 +90,7 @@ namespace FormulaEvaluator {
 
                 // '+' and '-' operators
                 else if (Regex.IsMatch(tokens[token], "\\+|-")) {
-                    // token is at beginning or end, or is preceded or followed by another operator
+                    // Operator token is in an invalid position; throws ArgumentException
                     if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
                         throw new ArgumentException();
                     }
@@ -95,37 +105,39 @@ namespace FormulaEvaluator {
                         subtract();
                     }
 
+                    // Push current token onto operator stack
                     operators.Push(tokens[token]);
                 }
 
                 // '*' and '/' operators
                 else if (Regex.IsMatch(tokens[token], "/|\\*")) {
-                    // token is at beginning or end, or is preceded or followed by another operator
+                    // Operator token is in an invalid position; throws ArgumentException
                     if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
                         throw new ArgumentException();
                     }
 
+                    // Push current token onto operator stack
                     operators.Push(tokens[token]);
                 }
 
-                // left parenthesis
+                // Left parenthesis
                 else if (Regex.IsMatch(tokens[token], "\\(")) {
                     operators.Push(tokens[token]);
                 }
 
-                // right parenthesis
+                // Right parenthesis
                 else if (Regex.IsMatch(tokens[token], "\\)")) {
-                    // next operator is '+'
+                    // Next operator is '+'
                     if (operators.IsOnTop("\\+")) {
                         add();
                     }
 
-                    // next operator is '-'
+                    // Next operator is '-'
                     else if (operators.IsOnTop("-")) {
                         subtract();
                     }
 
-                    // next operator SHOULD be '('
+                    // Next operator SHOULD be '('; pops if it is, else throws ArgumentException
                     if (!operators.IsOnTop("\\(")) {
                         throw new ArgumentException("Missing left parenthesis");
                     }
@@ -135,11 +147,12 @@ namespace FormulaEvaluator {
 
                     // '*' operator is next
                     if (operators.IsOnTop("\\*")) {
-                        // no more operands to apply operator to
+                        // No more operands to apply operator to; throws ArgumentException
                         if (operands.Count < 2) {
                             throw new ArgumentException();
                         }
 
+                        // Multiplies the top two operands, pushing the result
                         operators.Pop();
                         int val2 = int.Parse(operands.Pop());
                         int val1 = int.Parse(operands.Pop());
@@ -148,16 +161,17 @@ namespace FormulaEvaluator {
 
                     // '/' operator is next
                     else if (operators.IsOnTop("/")) {
-                        // no more operands to apply operator to
+                        // No more operands to apply operator to; throws ArgumentException
                         if (operands.Count < 2) {
                             throw new ArgumentException();
                         }
 
-                        // division by zero
+                        // Division by zero; throws ArgumentException
                         if (operands.IsOnTop("^0+$")) {
                             throw new ArgumentException();
                         }
 
+                        // Divides the top two operands, pushing the result
                         operators.Pop();
                         int val2 = int.Parse(operands.Pop());
                         int val1 = int.Parse(operands.Pop());
@@ -166,37 +180,35 @@ namespace FormulaEvaluator {
                 }
             }
 
-            // adds and pushes the next two operands
+            // Helper method to add the next two operands, pushing the result onto the stack
             void add() {
-                // not enough operands
+                // Not enough operands; throws ArgumentException
                 if (operands.Count < 2) {
                     throw new ArgumentException();
                 }
 
                 operators.Pop();
-
                 int val2 = int.Parse(operands.Pop());
                 int val1 = int.Parse(operands.Pop());
                 operands.Push((val1 + val2).ToString());
             }
 
-            // subtracts and pushes the next two operands
+            // Helper method to subtract the next two operands, pushing the result onto the stack
             void subtract() {
-                // not enough operands
+                // Not enough operands; throws ArgumentException
                 if (operands.Count < 2) {
                     throw new ArgumentException();
                 }
 
                 operators.Pop();
-
                 int val2 = int.Parse(operands.Pop());
                 int val1 = int.Parse(operands.Pop());
                 operands.Push((val1 - val2).ToString());
             }
 
-            // pops and multiplies the first operand by the given token, pushing the result
+            // Helper method to multiply the next operand by the given token, pushing the result onto the stack
             void multiply(string token) {
-                // no more operands to apply operator to
+                // Not enough operands; throws ArgumentException
                 if (operands.Count == 0) {
                     throw new ArgumentException("Not enough operands");
                 }
@@ -206,14 +218,14 @@ namespace FormulaEvaluator {
                 operands.Push((val * int.Parse(token)).ToString());
             }
 
-            // pops and divides the first operand by the given token, pushing the result
+            // Helper method to Divide the next operand by the given token, pushing the result onto the stack
             void divide(string token) {
-                // no more operands to apply operator to
+                // Not enough operands; throws ArgumentException
                 if (operands.Count == 0) {
                     throw new ArgumentException("Not enough operands");
                 }
 
-                // division by zero
+                // Division by zero; throws ArgumentException
                 if (Regex.IsMatch(token, "^0+$")) {
                     throw new ArgumentException("Division by zero: " + operands.Peek() + "\\" + token);
                 }
@@ -223,37 +235,42 @@ namespace FormulaEvaluator {
                 operands.Push((val / int.Parse(token)).ToString());
             }
 
-            // final stack conditions
-            if (operators.Count == 0) {     // empty operator stack
-                if (operands.Count != 1) {
+            // Final stack conditions
+            if (operators.Count == 0) {     // Empty operator stack
+                if (operands.Count != 1) {  // Leftover operands; throws ArgumentException
                     throw new ArgumentException("Too many operands in final stack: " + operands.ToString());
                 }
 
+                // Return result
                 return int.Parse(operands.Pop());
             }
-            else {                          // non-empty operator stack
-                if (operators.Count != 1) {
+            else {                          // Non-empty operator stack
+                if (operators.Count != 1) { // Leftover operators; throws ArgumentException
                     throw new ArgumentException("Too man operators in final stack: " + operators.ToString());
                 }
 
-                // last operator is '+'
+                // Last operator is '+'
                 if (operators.Peek().Equals("+")) {
                     add();
                 }
-                // last operator is '-'
+                // Last operator is '-'
                 else if (operators.Peek().Equals("-")) {
                     subtract();
                 }
-                // last operator is invalid
+                // Last operator is invalid; throws ArgumentException
                 else {
                     throw new ArgumentException("Invalid final operator on stack: " + operators.Peek());
                 }
 
+                // Return result
                 return int.Parse(operands.Pop());
             }
         }
     }
 
+    /// <summary>
+    /// Simple stackextension; adds the functionality of checking if the top operator matches a given pattern, ensuring a non-empty stack in the process.
+    /// </summary>
     static class PS1StackExtensions {
         public static bool IsOnTop(this Stack<String> stack, String pattern) {
             return stack.Count > 0 && Regex.IsMatch(stack.Peek(), pattern);

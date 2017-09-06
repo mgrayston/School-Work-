@@ -92,6 +92,7 @@ namespace EvaluatorTests {
             Test("Order of operations test", ValidTest("2 + 6 * a4", sheet.GetCell, 20));
             Test("Order of operations test 2", ValidTest("2 / 20* 80 - (12/6) +2", simpleLookup, 0));
             Test("Order of operations test 3", ValidTest("(1+2)*2/3", null, 2));
+            Test("Order of operations test 4", ValidTest("B4*(B4-(10/(2+3)*8))", simpleLookup, 17));
             Test("Order of operations zero test", ValidTest("0*((1+2*2/(2+1))*100000000 + 9999)", null, 0));
             Test("Order of operations with parenthesis test", ValidTest("(2+6)*a4", sheet.GetCell, 24));
             Test("Several operations inside parenthesis test", ValidTest("2+(3+5*9)", sheet.GetCell, 50));
@@ -106,7 +107,8 @@ namespace EvaluatorTests {
             Test("Consecutive operators test 3", InvalidTest("1+(2/3*)", simpleLookup));
             Test("Division by 0 test 1", InvalidTest("5/0", sheet.GetCell));
             Test("Division by 0 test 2", InvalidTest("5 * B4 + (7-4)/((4/2)-2)", sheet.GetCell));
-            Test("Misplaced operator test", InvalidTest("2+5+", sheet.GetCell));
+            Test("Misplaced operator test 1", InvalidTest("2+5+", sheet.GetCell));
+            Test("Misplaces operator test 2", InvalidTest("B4*(B4-(10/(2+3)/*8))", simpleLookup));
             Test("Invalid variable name test 1", InvalidTest("2+AB", simpleLookup));
             Test("Invalid variable name test 2", InvalidTest("2+AB123ac", simpleLookup));
             Test("Invalid variable name test 3", InvalidTest("2+123AB", simpleLookup));
@@ -114,6 +116,9 @@ namespace EvaluatorTests {
             Test("Invalid variable name test 5", InvalidTest("b3", simpleLookup));
             Test("Misplaced parenthesis test 1", InvalidTest("1+2*((3)", null));
             Test("Misplaced parenthesis test 2", InvalidTest("1+2*(3))", null));
+            Test("Misplaces parenthesis test 3", InvalidTest("B4*(B4-(10/(2+3))*8))", simpleLookup));
+            Test("Extra operator test", InvalidTest("B4*(B4-(10/(2+3)*8)+)", simpleLookup));
+            Test("Extra operand test", InvalidTest("B4*(B4-(10/(2+3)*8)8)", simpleLookup));
             Test("Invalid sheet lookup", InvalidTest("A4", sheet.GetCell));
 
             // Pause the console
