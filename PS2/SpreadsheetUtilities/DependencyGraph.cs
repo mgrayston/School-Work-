@@ -4,7 +4,6 @@
 // Code by Christopher Nielson, September 2017
 
 using System.Collections.Generic;
-using System.Collections.Specialized;
 
 namespace SpreadsheetUtilities {
 
@@ -57,6 +56,7 @@ namespace SpreadsheetUtilities {
             get {
                 int count = 0;
 
+                // Sum 
                 foreach (string s in dentGraph.Keys) {
                     count += dentGraph[s].Count;
                 }
@@ -128,14 +128,18 @@ namespace SpreadsheetUtilities {
         /// <param name="s"> s must be evaluated first. T depends on S</param>
         /// <param name="t"> t cannot be evaluated until s is</param>        /// 
         public void AddDependency(string s, string t) {
+            // If s hasn't been added as dependee before, give it an empty HashSet
             if (!dentGraph.ContainsKey(s)) {
                 dentGraph.Add(s, new HashSet<string>());
             }
+            // Add t as dependent
             dentGraph[s].Add(t);
 
+            // If t hasn't been added as dependent before, give it an empty HashSet
             if (!deeGraph.ContainsKey(t)) {
                 deeGraph.Add(t, new HashSet<string>());
             }
+            // Add s as dependee
             deeGraph[t].Add(s);
         }
 
@@ -158,17 +162,17 @@ namespace SpreadsheetUtilities {
         /// t in newDependents, adds the ordered pair (s,t).
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents) {
-            // remove s as dependee from all r
+            // Remove s as dependee from all r
             if (dentGraph.ContainsKey(s)) {
                 foreach (string r in dentGraph[s]) {
                     deeGraph[r].Remove(s);
                 }
             }
 
-            // clear all r
+            // Clear all r
             dentGraph[s] = new HashSet<string>();
 
-            // add new t
+            // Add new t
             foreach (string t in newDependents) {
                 dentGraph[s].Add(t);
                 if (!deeGraph.ContainsKey(t)) {
@@ -184,17 +188,17 @@ namespace SpreadsheetUtilities {
         /// t in newDependees, adds the ordered pair (t,s).
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees) {
-            // remove s as dependent from all r
+            // Remove s as dependent from all r
             if (deeGraph.ContainsKey(s)) {
                 foreach (string r in deeGraph[s]) {
                     dentGraph[r].Remove(s);
                 }
             }
 
-            // clear all r
+            // Clear all r
             deeGraph[s] = new HashSet<string>();
 
-            // add new t
+            // Add new t
             foreach (string t in newDependees) {
                 deeGraph[s].Add(t);
                 if (!dentGraph.ContainsKey(t)) {
