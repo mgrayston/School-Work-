@@ -37,14 +37,16 @@ namespace SpreadsheetUtilities {
     /// </summary>
 
     public class DependencyGraph {
-        private Dictionary<string, HashSet<string>> dependGraph;
+        private Dictionary<string, HashSet<string>> dentGraph;
+        private Dictionary<string, HashSet<string>> deeGraph;
         // TODO Possibly need two graphs; one for dependents and one for dependees?
 
         /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
         public DependencyGraph() {
-            dependGraph = new Dictionary<string, HashSet<string>>();
+            dentGraph = new Dictionary<string, HashSet<string>>();
+            deeGraph = new Dictionary<string, HashSet<string>>();
         }
 
 
@@ -55,8 +57,8 @@ namespace SpreadsheetUtilities {
             get {
                 int count = 0;
 
-                foreach (string s in dependGraph.Keys) {
-                    count += dependGraph[s].Count;
+                foreach (string s in dentGraph.Keys) {
+                    count += dentGraph[s].Count;
                 }
 
                 return count;
@@ -73,8 +75,7 @@ namespace SpreadsheetUtilities {
         /// </summary>
         public int this[string s] {
             get {
-                // TODO
-                return -1;
+                return deeGraph.ContainsKey(s) ? deeGraph[s].Count : 0;
             }
         }
 
@@ -83,7 +84,7 @@ namespace SpreadsheetUtilities {
         /// Reports whether dependents(s) is non-empty.
         /// </summary>
         public bool HasDependents(string s) {
-            return dependGraph.ContainsKey(s) && dependGraph[s].Count > 0;
+            return dentGraph.ContainsKey(s) && dentGraph[s].Count > 0;
         }
 
 
@@ -91,8 +92,7 @@ namespace SpreadsheetUtilities {
         /// Reports whether dependees(s) is non-empty.
         /// </summary>
         public bool HasDependees(string s) {
-            // TODO very inefficient to go through each key
-            return false;
+            return deeGraph.ContainsKey(s) && deeGraph[s].Count > 0;
         }
 
 
@@ -100,15 +100,20 @@ namespace SpreadsheetUtilities {
         /// Enumerates dependents(s).
         /// </summary>
         public IEnumerable<string> GetDependents(string s) {
-            return dependGraph[s];
+            if (dentGraph.ContainsKey(s)) {
+                return dentGraph[s];
+            }
+            return new HashSet<string>();
         }
 
         /// <summary>
         /// Enumerates dependees(s).
         /// </summary>
         public IEnumerable<string> GetDependees(string s) {
-            // TODO
-            return null;
+            if (deeGraph.ContainsKey(s)) {
+                return deeGraph[s];
+            }
+            return new HashSet<string>();
         }
 
 
@@ -123,11 +128,15 @@ namespace SpreadsheetUtilities {
         /// <param name="s"> s must be evaluated first. T depends on S</param>
         /// <param name="t"> t cannot be evaluated until s is</param>        /// 
         public void AddDependency(string s, string t) {
-            if (!dependGraph.ContainsKey(s)) {
-                dependGraph.Add(s, new HashSet<string>());
+            if (!dentGraph.ContainsKey(s)) {
+                dentGraph.Add(s, new HashSet<string>());
             }
+            dentGraph[s].Add(t);
 
-            dependGraph[s].Add(t);
+            if (!deeGraph.ContainsKey(t)) {
+                deeGraph.Add(t, new HashSet<string>());
+            }
+            deeGraph[t].Add(s);
         }
 
 
@@ -137,8 +146,9 @@ namespace SpreadsheetUtilities {
         /// <param name="s"></param>
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t) {
-            if (dependGraph.ContainsKey(s) && dependGraph[s].Contains(t)) {
-                dependGraph[s].Remove(t);
+            if (dentGraph.ContainsKey(s) && dentGraph[s].Contains(t)) {
+                dentGraph[s].Remove(t);
+                deeGraph[t].Remove(s);
             }
         }
 
@@ -148,10 +158,23 @@ namespace SpreadsheetUtilities {
         /// t in newDependents, adds the ordered pair (s,t).
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents) {
-            dependGraph[s] = new HashSet<string>();
+            // remove s as dependee from all r
+            if (dentGraph.ContainsKey(s)) {
+                foreach (string r in dentGraph[s]) {
+                    deeGraph[r].Remove(s);
+                }
+            }
 
+            // clear all r
+            dentGraph[s] = new HashSet<string>();
+
+            // add new t
             foreach (string t in newDependents) {
-                dependGraph[s].Add(t);
+                dentGraph[s].Add(t);
+                if (!deeGraph.ContainsKey(t)) {
+                    deeGraph.Add(t, new HashSet<string>());
+                }
+                deeGraph[t].Add(s);
             }
         }
 
@@ -161,8 +184,24 @@ namespace SpreadsheetUtilities {
         /// t in newDependees, adds the ordered pair (t,s).
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees) {
+            // remove s as dependent from all r
+            if (deeGraph.ContainsKey(s)) {
+                foreach (string r in deeGraph[s]) {
+                    dentGraph[r].Remove(s);
+                }
+            }
+
+            // clear all r
+            deeGraph[s] = new HashSet<string>();
+
+            // add new t
+            foreach (string t in newDependees) {
+                deeGraph[s].Add(t);
+                if (!dentGraph.ContainsKey(t)) {
+                    dentGraph.Add(t, new HashSet<string>());
+                }
+                dentGraph[t].Add(s);
+            }
         }
-
     }
-
 }
