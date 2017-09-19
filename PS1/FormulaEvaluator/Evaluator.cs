@@ -177,6 +177,11 @@ namespace FormulaEvaluator {
                         int val1 = int.Parse(operands.Pop());
                         operands.Push((val1 / val2).ToString());
                     }
+
+                    // Next token is not an operator
+                    if (Regex.IsMatch(tokens[token + 1], "[a-zA-Z0-9]")) {
+                        throw new ArgumentException(") not followed by an operator! Found " + tokens[token + 1] + " instead!");
+                    }
                 }
             }
 
