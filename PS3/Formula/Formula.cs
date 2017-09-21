@@ -44,9 +44,7 @@ namespace SpreadsheetUtilities {
     /// </summary>
     public class Formula {
 
-        private string formula;
-        private Func<string, string> normalize;
-        private Func<string, bool> isValid;
+        private string[] tokens;
 
         // Patterns for individual tokens
         private static String lpPattern = @"\(";
@@ -91,33 +89,90 @@ namespace SpreadsheetUtilities {
         /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect.
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid) {
-            this.normalize = normalize;
-            this.isValid = isValid;
-
             IEnumerable<string> tokens = GetTokens(formula);
+
+            // Checks if the token following the provided index is valid (i.e. an operator or right parenthesis), or nothing; can be negated for the left parenthesis and operator cases. 
+            // Returns true if the next token is invalid (not an operator or parenthesis).
+            bool invalidFollowing(int index) {
+                return index == tokens.Count() - 1 || ((index + 1) < tokens.Count() && !Regex.IsMatch(tokens.ElementAt(index + 1), String.Format("({0}) | ({1})", opPattern, rpPattern)));
+            }
+
+            // No tokens
+            if (tokens.Count() < 1) {
+                throw new FormulaFormatException("No tokens provided");
+            }
+
+            // Invalid first token
             if (Regex.IsMatch(tokens.First(), String.Format("({0}) | ({1}))", rpPattern, opPattern))) {
                 throw new FormulaFormatException("Invalid first token: " + tokens.First());
             }
 
+            // Invalid last token
             if (Regex.IsMatch(tokens.First(), String.Format("({0}) | ({1}))", lpPattern, opPattern))) {
                 throw new FormulaFormatException("Invalid last token: " + tokens.Last());
             }
+            
+            int leftP = 0;
+            int rightP = 0;
 
-            foreach (string s in GetTokens(formula)) {
+            for (int token = 0; token < tokens.Count(); token++) {
+                string tokenToAdd = tokens.ElementAt(token);
 
-                if (Regex.IsMatch(s, @"[a-zA-Z_](?: [a-zA-Z_]|\d)*")) {
-                    string tmp = normalize(s);
-                    if (isValid(tmp)) {
-                        this.formula += tmp;
-                    }
-                    else {
-                        throw new FormulaFormatException("Invalid normalized variable: " + tmp);
+                // Left parenthesis
+                if (Regex.IsMatch(tokenToAdd, lpPattern)) {
+                    ++leftP;
+
+                    if (!invalidFollowing(token)) {
+                        throw new FormulaFormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
                     }
                 }
 
-                else {
-                    this.formula += s;
+                // Right parenthesis
+                else if (Regex.IsMatch(tokenToAdd, rpPattern)) {
+                    ++rightP;
+
+                    if (rightP > leftP) {
+                        throw new FormulaFormatException("There are more ) than (");
+                    }
+
+                    if (invalidFollowing(token)) {
+                        throw new FormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
+                    }
                 }
+
+                // Double
+                else if (Regex.IsMatch(tokenToAdd, doublePattern)) {
+                    if (invalidFollowing(token)) {
+                        throw new FormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
+                    }
+
+                    Double tmp;
+                    Double.TryParse(tokenToAdd, out tmp);
+                    tokenToAdd = tmp.ToString();
+                }
+
+                // Variable
+                else if (Regex.IsMatch(tokenToAdd, varPattern)) {
+                    // TODO check for variable validity here, and set 'tokenToAdd' to the normalized/verified version
+
+                    if (invalidFollowing(token)) {
+                        throw new FormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
+                    }
+                }
+
+                // Operator
+                else if (Regex.IsMatch(tokenToAdd, opPattern)) {
+                    if (!invalidFollowing(token)) {
+                        throw new FormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
+                    }
+                }
+
+                this.tokens[token] = tokenToAdd;
+            }
+
+            // Ensure parentheses balance
+            if (leftP != rightP) {
+                throw new FormatException("The left and right parentheses do not balance each other");
             }
         }
 
@@ -142,9 +197,9 @@ namespace SpreadsheetUtilities {
         ///
         /// This method should never throw an exception.
         /// </summary>
-        public object Evaluate(Func<string, double> lookup) {
-            IEnumerable<String> tokens = GetTokens(formula);
 
+        // TODO use try-catch around lookups, catch the exceptions, and turn them into FormulaError
+        public object Evaluate(Func<string, double> lookup) {
             Stack<String> operands = new Stack<String>();
             Stack<String> operators = new Stack<String>();
 
@@ -190,7 +245,7 @@ namespace SpreadsheetUtilities {
                     }
 
                     // Lookup value of variable
-                    int varResult = variableEvaluator(tokens[token]);
+                    double varResult = lookup(tokens[token]);
 
                     // '*' operator is next
                     if (operators.IsOnTop("\\*")) {
@@ -442,7 +497,11 @@ namespace SpreadsheetUtilities {
         /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
         /// </summary>
         public override bool Equals(object obj) {
-            return false;
+            if (!(obj is Formula)) {
+                return false;
+            }
+
+            return ToString().Equals(obj.ToString());
         }
 
         /// <summary>
@@ -451,7 +510,15 @@ namespace SpreadsheetUtilities {
         /// null and one is not, this method should return false.
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2) {
-            return (ReferenceEquals(f1, null) && ReferenceEquals(f2, null)) || f1.Equals(f2);
+            if (ReferenceEquals(f1, null) && ReferenceEquals(f2, null)) {
+                return true;
+            }
+
+            if (ReferenceEquals(f1, null) || ReferenceEquals(f2, null)) {
+                return false;
+            }
+
+            return f1.Equals(f2);
         }
 
         /// <summary>
@@ -527,7 +594,7 @@ namespace SpreadsheetUtilities {
     /// <summary>
     /// Simple stackextension; adds the functionality of checking if the top operator matches a given pattern, ensuring a non-empty stack in the process.
     /// </summary>
-    static class PS3StackExtensions {
+    static class PS3Extensions {
         public static bool IsOnTop(this Stack<String> stack, String pattern) {
             return stack.Count > 0 && Regex.IsMatch(stack.Peek(), pattern);
         }
