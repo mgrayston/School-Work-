@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SpreadsheetUtilities {
@@ -45,6 +44,7 @@ namespace SpreadsheetUtilities {
     public class Formula {
 
         private string[] tokens;
+        private HashSet<String> vars;
 
         // Patterns for individual tokens
         private static String lpPattern = @"\(";
@@ -91,10 +91,13 @@ namespace SpreadsheetUtilities {
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid) {
             IEnumerable<string> tokens = GetTokens(formula);
 
+            this.tokens = new string[tokens.Count()];
+            vars = new HashSet<string>();
+
             // Checks if the token following the provided index is valid (i.e. an operator or right parenthesis), or nothing; can be negated for the left parenthesis and operator cases. 
             // Returns true if the next token is invalid (not an operator or parenthesis).
             bool invalidFollowing(int index) {
-                return index == tokens.Count() - 1 || ((index + 1) < tokens.Count() && !Regex.IsMatch(tokens.ElementAt(index + 1), String.Format("({0}) | ({1})", opPattern, rpPattern)));
+                return (index + 1) < tokens.Count() ? !Regex.IsMatch(tokens.ElementAt(index + 1), String.Format("{0}|{1}", opPattern, rpPattern)) : false;
             }
 
             // No tokens
@@ -103,15 +106,15 @@ namespace SpreadsheetUtilities {
             }
 
             // Invalid first token
-            if (Regex.IsMatch(tokens.First(), String.Format("({0}) | ({1}))", rpPattern, opPattern))) {
+            if (Regex.IsMatch(tokens.First(), String.Format("{0}|{1}", rpPattern, opPattern))) {
                 throw new FormulaFormatException("Invalid first token: " + tokens.First());
             }
 
             // Invalid last token
-            if (Regex.IsMatch(tokens.First(), String.Format("({0}) | ({1}))", lpPattern, opPattern))) {
+            if (Regex.IsMatch(tokens.First(), String.Format("{0}|{1}", lpPattern, opPattern))) {
                 throw new FormulaFormatException("Invalid last token: " + tokens.Last());
             }
-            
+
             int leftP = 0;
             int rightP = 0;
 
@@ -141,7 +144,7 @@ namespace SpreadsheetUtilities {
                 }
 
                 // Double
-                else if (Regex.IsMatch(tokenToAdd, doublePattern)) {
+                else if (Regex.IsMatch(tokenToAdd, "^\\d+\\.*\\d*")) {
                     if (invalidFollowing(token)) {
                         throw new FormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
                     }
@@ -153,11 +156,16 @@ namespace SpreadsheetUtilities {
 
                 // Variable
                 else if (Regex.IsMatch(tokenToAdd, varPattern)) {
-                    // TODO check for variable validity here, and set 'tokenToAdd' to the normalized/verified version
+                    tokenToAdd = normalize(tokenToAdd);
+                    if (!isValid(tokenToAdd)) {
+                        throw new FormulaFormatException(tokenToAdd + " is not a valid variable");
+                    }
 
                     if (invalidFollowing(token)) {
                         throw new FormatException("Invalid token after " + tokenToAdd + ": " + tokens.ElementAt(token + 1));
                     }
+
+                    vars.Add(tokenToAdd);
                 }
 
                 // Operator
@@ -197,14 +205,13 @@ namespace SpreadsheetUtilities {
         ///
         /// This method should never throw an exception.
         /// </summary>
-
-        // TODO use try-catch around lookups, catch the exceptions, and turn them into FormulaError
         public object Evaluate(Func<string, double> lookup) {
             Stack<String> operands = new Stack<String>();
             Stack<String> operators = new Stack<String>();
 
             // Iterate through all tokens and process them accordingly
             foreach (int token in Enumerable.Range(0, tokens.Length)) {
+                /**
                 // Trim extra whitespace
                 tokens[token] = Regex.Replace(tokens[token], "^\\s+", "");
                 tokens[token] = Regex.Replace(tokens[token], "\\s+$", "");
@@ -218,9 +225,10 @@ namespace SpreadsheetUtilities {
                 if (tokens[token].Equals("")) {
                     continue;
                 }
+                */
 
                 // Digits
-                if (Regex.IsMatch(tokens[token], "^\\d+$")) {
+                if (Regex.IsMatch(tokens[token], "^\\d+\\.*\\d*")) {
                     // '*' operator is next
                     if (operators.IsOnTop("\\*")) {
                         multiply(tokens[token]);
@@ -228,7 +236,12 @@ namespace SpreadsheetUtilities {
 
                     // '/' operator is next
                     else if (operators.IsOnTop("/")) {
-                        divide(tokens[token]);
+                        try {
+                            divide(tokens[token]);
+                        }
+                        catch {
+                            return new FormulaError("Division by zero occured");
+                        }
                     }
 
                     // No current operators to deal with; pushes token onto the operand stack
@@ -238,38 +251,46 @@ namespace SpreadsheetUtilities {
                 }
 
                 // Variables
-                else if (Regex.IsMatch(tokens[token], "[a-zA-Z]+\\d+")) {
+                else if (Regex.IsMatch(tokens[token], varPattern)) {
+                    // TODO edit
+                    /*
                     // Throw exception for invalid variable name
                     if (Regex.IsMatch(tokens[token], "[a-zA-Z]?\\d+[a-zA-Z]+\\d?")) {
                         throw new ArgumentException("Invalid variable: " + tokens[token]);
                     }
+                    */
 
                     // Lookup value of variable
-                    double varResult = lookup(tokens[token]);
+                    try {
+                        double varResult = lookup(tokens[token]);
 
-                    // '*' operator is next
-                    if (operators.IsOnTop("\\*")) {
-                        multiply(varResult.ToString());
+                        // '*' operator is next
+                        if (operators.IsOnTop("\\*")) {
+                            multiply(varResult.ToString());
+                        }
+
+                        // '/' operator is next
+                        else if (operators.IsOnTop("/")) {
+                            try {
+                                divide(varResult.ToString());
+                            }
+                            catch {
+                                return new FormulaError("Division by zero occured");
+                            }
+                        }
+
+                        // No current operators to deal with; pushes token onto the operand stack
+                        else {
+                            operands.Push(varResult.ToString());
+                        }
                     }
-
-                    // '/' operator is next
-                    else if (operators.IsOnTop("/")) {
-                        divide(varResult.ToString());
-                    }
-
-                    // No current operators to deal with; pushes token onto the operand stack
-                    else {
-                        operands.Push(varResult.ToString());
+                    catch {
+                        return new FormulaError("Variable " + tokens[token] + " not found");
                     }
                 }
 
                 // '+' and '-' operators
                 else if (Regex.IsMatch(tokens[token], "\\+|-")) {
-                    // Operator token is in an invalid position; throws ArgumentException
-                    if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
-                        throw new ArgumentException();
-                    }
-
                     // '+' operator is next
                     if (operators.IsOnTop("\\+")) {
                         add();
@@ -286,11 +307,6 @@ namespace SpreadsheetUtilities {
 
                 // '*' and '/' operators
                 else if (Regex.IsMatch(tokens[token], "/|\\*")) {
-                    // Operator token is in an invalid position; throws ArgumentException
-                    if (token == 0 || token == tokens.Length - 1 || Regex.IsMatch(tokens[token - 1], "\\+|-|\\*|/") || Regex.IsMatch(tokens[token + 1], "\\+|-|\\*|/")) {
-                        throw new ArgumentException();
-                    }
-
                     // Push current token onto operator stack
                     operators.Push(tokens[token]);
                 }
@@ -312,6 +328,8 @@ namespace SpreadsheetUtilities {
                         subtract();
                     }
 
+                    // TODO not sure if needed
+                    /*
                     // Next operator SHOULD be '('; pops if it is, else throws ArgumentException
                     if (!operators.IsOnTop("\\(")) {
                         throw new ArgumentException("Missing left parenthesis");
@@ -319,14 +337,17 @@ namespace SpreadsheetUtilities {
                     else {
                         operators.Pop();
                     }
+                    */
 
                     // '*' operator is next
                     if (operators.IsOnTop("\\*")) {
+                        // TODO 
+                        /*
                         // No more operands to apply operator to; throws ArgumentException
                         if (operands.Count < 2) {
                             throw new ArgumentException();
                         }
-
+                        */
                         // Multiplies the top two operands, pushing the result
                         operators.Pop();
                         int val2 = int.Parse(operands.Pop());
@@ -336,14 +357,16 @@ namespace SpreadsheetUtilities {
 
                     // '/' operator is next
                     else if (operators.IsOnTop("/")) {
+                        // TODO 
+                        /*
                         // No more operands to apply operator to; throws ArgumentException
                         if (operands.Count < 2) {
                             throw new ArgumentException();
                         }
-
+                        */
                         // Division by zero; throws ArgumentException
                         if (operands.IsOnTop("^0+$")) {
-                            throw new ArgumentException();
+                            return new FormulaError("Division by zero occured");
                         }
 
                         // Divides the top two operands, pushing the result
@@ -352,21 +375,18 @@ namespace SpreadsheetUtilities {
                         int val1 = int.Parse(operands.Pop());
                         operands.Push((val1 / val2).ToString());
                     }
-
-                    // Next token is not an operator
-                    if (Regex.IsMatch(tokens[token + 1], "[a-zA-Z0-9]")) {
-                        throw new ArgumentException(") not followed by an operator! Found " + tokens[token + 1] + " instead!");
-                    }
                 }
             }
 
             // Helper method to add the next two operands, pushing the result onto the stack
             void add() {
+                // TODO
+                /*
                 // Not enough operands; throws ArgumentException
                 if (operands.Count < 2) {
                     throw new ArgumentException();
                 }
-
+                */
                 operators.Pop();
                 int val2 = int.Parse(operands.Pop());
                 int val1 = int.Parse(operands.Pop());
@@ -375,11 +395,13 @@ namespace SpreadsheetUtilities {
 
             // Helper method to subtract the next two operands, pushing the result onto the stack
             void subtract() {
+                // TODO
+                /*
                 // Not enough operands; throws ArgumentException
                 if (operands.Count < 2) {
                     throw new ArgumentException();
                 }
-
+                */
                 operators.Pop();
                 int val2 = int.Parse(operands.Pop());
                 int val1 = int.Parse(operands.Pop());
@@ -388,11 +410,13 @@ namespace SpreadsheetUtilities {
 
             // Helper method to multiply the next operand by the given token, pushing the result onto the stack
             void multiply(string token) {
+                // TODO 
+                /*
                 // Not enough operands; throws ArgumentException
                 if (operands.Count == 0) {
                     throw new ArgumentException("Not enough operands");
                 }
-
+                */
                 operators.Pop();
                 int val = int.Parse(operands.Pop());
                 operands.Push((val * int.Parse(token)).ToString());
@@ -400,14 +424,16 @@ namespace SpreadsheetUtilities {
 
             // Helper method to Divide the next operand by the given token, pushing the result onto the stack
             void divide(string token) {
+                // TODO
+                /*
                 // Not enough operands; throws ArgumentException
                 if (operands.Count == 0) {
                     throw new ArgumentException("Not enough operands");
                 }
-
+                */
                 // Division by zero; throws ArgumentException
                 if (Regex.IsMatch(token, "^0+$")) {
-                    throw new ArgumentException("Division by zero: " + operands.Peek() + "\\" + token);
+                    throw new FormulaFormatException("Division by zero: " + operands.Peek() + "\\" + token);
                 }
 
                 operators.Pop();
@@ -417,18 +443,19 @@ namespace SpreadsheetUtilities {
 
             // Final stack conditions
             if (operators.Count == 0) {     // Empty operator stack
+                /*
                 if (operands.Count != 1) {  // Leftover operands; throws ArgumentException
                     throw new ArgumentException("Too many operands in final stack: " + operands.ToString());
                 }
-
+                */
                 // Return result
-                return int.Parse(operands.Pop());
             }
             else {                          // Non-empty operator stack
+                /*
                 if (operators.Count != 1) { // Leftover operators; throws ArgumentException
                     throw new ArgumentException("Too man operators in final stack: " + operators.ToString());
                 }
-
+                */
                 // Last operator is '+'
                 if (operators.Peek().Equals("+")) {
                     add();
@@ -437,14 +464,16 @@ namespace SpreadsheetUtilities {
                 else if (operators.Peek().Equals("-")) {
                     subtract();
                 }
+                /*
                 // Last operator is invalid; throws ArgumentException
                 else {
                     throw new ArgumentException("Invalid final operator on stack: " + operators.Peek());
                 }
-
+                */
                 // Return result
-                return int.Parse(operands.Pop());
             }
+
+            return int.Parse(operands.Pop());
         }
 
         /// <summary>
@@ -459,7 +488,10 @@ namespace SpreadsheetUtilities {
         /// new Formula("x+X*z").GetVariables() should enumerate "x", "X", and "z".
         /// </summary>
         public IEnumerable<String> GetVariables() {
-            return null;
+            // TODO
+            foreach (string s in vars.AsEnumerable()) {
+                yield return s;
+            }
         }
 
         /// <summary>
@@ -473,7 +505,11 @@ namespace SpreadsheetUtilities {
         /// new Formula("x + Y").ToString() should return "x+Y"
         /// </summary>
         public override string ToString() {
-            return null;
+            string toString = "";
+            for (int token = 0; token < tokens.Length; token++) {
+                toString += tokens[token];
+            }
+            return toString;
         }
 
         /// <summary>
@@ -497,7 +533,7 @@ namespace SpreadsheetUtilities {
         /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
         /// </summary>
         public override bool Equals(object obj) {
-            if (!(obj is Formula)) {
+            if (ReferenceEquals(obj, null) || !(obj is Formula)) {
                 return false;
             }
 
@@ -527,7 +563,15 @@ namespace SpreadsheetUtilities {
         /// null and one is not, this method should return true.
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2) {
-            return !(ReferenceEquals(f1, null) && ReferenceEquals(f2, null)) && !f1.Equals(f2);
+            if (ReferenceEquals(f1, null)) {
+                if (ReferenceEquals(f2, null)) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return !f1.Equals(f2);
         }
 
         /// <summary>
@@ -536,7 +580,7 @@ namespace SpreadsheetUtilities {
         /// randomly-generated unequal Formulae have the same hash code should be extremely small.
         /// </summary>
         public override int GetHashCode() {
-            return 0;
+            return ToString().GetHashCode();
         }
 
         /// <summary>
