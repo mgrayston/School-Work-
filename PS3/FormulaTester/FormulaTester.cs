@@ -24,25 +24,25 @@ namespace FormulaTester {
         [TestMethod]
         public void validConstructorWithoutValidatorNormalizer() {
             Formula f = new Formula("4+3");
-            Assert.AreEqual(7, f.Evaluate(null));
+            Assert.AreEqual(7, (double) f.Evaluate(null));
         }
 
         [TestMethod]
         public void validConstructorWithValidatorNormalizer() {
             Formula f = new Formula("4 + a3", s => s.ToUpper(), s => true);
-            Assert.AreEqual(63, f.Evaluate(simpleLookup));
+            Assert.AreEqual(63, (double) f.Evaluate(simpleLookup));
         }
 
         [TestMethod]
         public void weirdVariableName() {
             Formula f = new Formula("13 + _Abc123A", s => s.ToLower(), s => true);
-            Assert.AreEqual(26, f.Evaluate(simpleLookup));
+            Assert.AreEqual(26, (double) f.Evaluate(simpleLookup));
         }
 
         [TestMethod]
         public void validVariableByPassedValidator() {
             Formula f = new Formula("13 + _Abc123A", s => s.ToLower(), s => Regex.IsMatch(s, "_+"));
-            Assert.AreEqual(26, f.Evaluate(simpleLookup));
+            Assert.AreEqual(26, (double) f.Evaluate(simpleLookup));
         }
 
         [TestMethod]
@@ -149,12 +149,37 @@ namespace FormulaTester {
             int correctHashCode = "BBFCCDDFJ1Q2".GetHashCode();
             Assert.AreEqual(correctHashCode, f1.GetHashCode());
         }
-
+        /*
         [TestMethod]
         public void getVariablesSimple() {
             Formula f1 = new Formula("3 + a");
             IEnumerable<string> s = f1.GetVariables();
             s.cou
+        }
+        */
+
+        [TestMethod]
+        public void evaluateTest() {
+            Formula f1 = new Formula("(a3 * ((29+23) / 26)/59)+ 11", s => s.ToUpper(), s => true);
+            Assert.AreEqual(13, (double) f1.Evaluate(simpleLookup));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void unevenParenthesesLeft() {
+            Formula f1 = new Formula("(((9*3) + 1)");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void unevenParenthesesRight() {
+            Formula f1 = new Formula("(9*3))");
+        }
+
+        [TestMethod]
+        public void divisionByZero() {
+            Formula f1 = new Formula("A3*13/83910501048391 + 1/0");
+            Assert.IsTrue(f1.Evaluate(simpleLookup) is FormulaError);
         }
     }
 }
