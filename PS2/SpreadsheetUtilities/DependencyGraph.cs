@@ -38,7 +38,6 @@ namespace SpreadsheetUtilities {
     public class DependencyGraph {
         private Dictionary<string, HashSet<string>> dentGraph;
         private Dictionary<string, HashSet<string>> deeGraph;
-        // TODO Possibly need two graphs; one for dependents and one for dependees?
 
         /// <summary>
         /// Creates an empty DependencyGraph.
