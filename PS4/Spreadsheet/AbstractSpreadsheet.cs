@@ -196,6 +196,7 @@ namespace SS {
         /// </summary>
         // TODO
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed) {
+            // Marks the "current" cell as visited
             visited.Add(name);
             foreach (String n in GetDirectDependents(name)) {
                 if (n.Equals(start)) {
@@ -207,6 +208,5 @@ namespace SS {
             }
             changed.AddFirst(name);
         }
-
     }
 }
