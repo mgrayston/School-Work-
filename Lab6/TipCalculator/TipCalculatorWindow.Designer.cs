@@ -23,7 +23,6 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            this.calculateButton = new System.Windows.Forms.Button();
             this.promptLabel = new System.Windows.Forms.Label();
             this.billBox = new System.Windows.Forms.TextBox();
             this.tipBox = new System.Windows.Forms.TextBox();
@@ -31,16 +30,6 @@
             this.totalLabel = new System.Windows.Forms.Label();
             this.tipAmtLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
-            // 
-            // calculateButton
-            // 
-            this.calculateButton.Location = new System.Drawing.Point(120, 203);
-            this.calculateButton.Name = "calculateButton";
-            this.calculateButton.Size = new System.Drawing.Size(118, 41);
-            this.calculateButton.TabIndex = 0;
-            this.calculateButton.Text = "Calculate";
-            this.calculateButton.UseVisualStyleBackColor = true;
-            this.calculateButton.Click += new System.EventHandler(this.calculateButton_Click);
             // 
             // promptLabel
             // 
@@ -105,7 +94,6 @@
             this.Controls.Add(this.tipBox);
             this.Controls.Add(this.billBox);
             this.Controls.Add(this.promptLabel);
-            this.Controls.Add(this.calculateButton);
             this.Name = "tipCalculatorWindow";
             this.Text = "Tip Calculator";
             this.ResumeLayout(false);
@@ -114,8 +102,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Button calculateButton;
         private System.Windows.Forms.Label promptLabel;
         private System.Windows.Forms.TextBox billBox;
         private System.Windows.Forms.TextBox tipBox;

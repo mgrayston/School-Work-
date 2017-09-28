@@ -12,7 +12,7 @@ namespace TipCalculator {
             InitializeComponent();
         }
 
-        private void calculateButton_Click(object sender, EventArgs e) {
+        private void calculate() {
             double tipAmt = (tipPercent / 100) * billTotal;
             double totalAmt = billTotal + tipAmt;
             tipAmtLabel.Text = "Tip Amount: " + tipAmt.ToString();
@@ -20,18 +20,14 @@ namespace TipCalculator {
         }
 
         private void billBox_TextChanged(object sender, EventArgs e) {
-            if (Regex.IsMatch(billBox.Text, "-") || !double.TryParse(billBox.Text, out billTotal)) {
-                calculateButton.Enabled = false;
-            } else {
-                calculateButton.Enabled = true;
+            if (!Regex.IsMatch(billBox.Text, "-") && double.TryParse(billBox.Text, out billTotal)) {
+                calculate();
             }
         }
 
         private void tipBox_TextChanged(object sender, EventArgs e) {
-            if (Regex.IsMatch(tipBox.Text, "-") || !double.TryParse(tipBox.Text, out tipPercent)) {
-                calculateButton.Enabled = false;
-            } else {
-                calculateButton.Enabled = true;
+            if (!Regex.IsMatch(tipBox.Text, "-") && double.TryParse(tipBox.Text, out tipPercent)) {
+                calculate();
             }
         }
     }
