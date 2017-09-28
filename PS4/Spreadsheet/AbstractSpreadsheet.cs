@@ -164,9 +164,6 @@ namespace SS {
         /// If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
         /// and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
         /// The method will produce one of those enumerations.
-        /// 
-        /// PLEASE NOTE THAT THIS METHOD DEPENDS ON THE ABSTRACT METHOD GetDirectDependents.
-        /// IT WON'T WORK UNTIL GetDirectDependents IS IMPLEMENTED CORRECTLY.
         /// </summary>
         protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names) {
             LinkedList<String> changed = new LinkedList<String>();
@@ -192,17 +189,17 @@ namespace SS {
         /// <summary>
         /// A helper for the GetCellsToRecalculate method.
         /// 
-        ///   -- You should fully comment what is going on below --
         /// </summary>
-        // TODO
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed) {
             // Marks the "current" cell as visited
             visited.Add(name);
             foreach (String n in GetDirectDependents(name)) {
                 if (n.Equals(start)) {
+                    // If name contains start as a dependent, the dependency is circular
                     throw new CircularException();
                 }
                 else if (!visited.Contains(n)) {
+                    // Otherwise, continue recursing into dependents
                     Visit(start, n, visited, changed);
                 }
             }

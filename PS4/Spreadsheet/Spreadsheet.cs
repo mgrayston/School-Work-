@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using SpreadsheetUtilities;
 
+// Written by Christopher Nielson for CS 3500, September 29, 2017
+
 namespace SS {
     public class Spreadsheet : AbstractSpreadsheet {
         private Dictionary<string, object> cells;   // Dictionary that acts as the "spreadsheet", storing all cells and their contents
         private DependencyGraph cellGraph;          // Used to track dependencies of all cells
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Spreadsheet" /> class.
-        /// </summary>
         public Spreadsheet() {
             cells = new Dictionary<string, object>();
             cellGraph = new DependencyGraph();
@@ -22,7 +21,6 @@ namespace SS {
 
         public override object GetCellContents(string name) {
             if (isValidName(name)) {
-                // TODO check for different types (formula string etc.)
                 return cells[name];
             }
 
@@ -32,12 +30,15 @@ namespace SS {
         public override ISet<string> SetCellContents(string name, double number) {
             if (isValidName(name)) {
                 cells[name] = number;
-                HashSet<string> dependents = new HashSet<string>();
+                cellGraph.ReplaceDependees(name, null);
+                return new HashSet<string> (GetCellsToRecalculate(name));
+                /*HashSet<string> dependents = new HashSet<string>();
                 dependents.Add(name);
                 foreach (string cell in cellGraph.GetDependents(name)) {
                     dependents.Add(cell);
                 }
                 return dependents;
+                */
             }
 
             throw new InvalidNameException();
@@ -50,12 +51,8 @@ namespace SS {
 
             if (isValidName(name)) {
                 cells[name] = text;
-                HashSet<string> dependents = new HashSet<string>();
-                dependents.Add(name);
-                foreach (string cell in cellGraph.GetDependents(name)) {
-                    dependents.Add(cell);
-                }
-                return dependents;
+                cellGraph.ReplaceDependees(name, null);
+                return new HashSet<string> (GetCellsToRecalculate(name));
             }
 
             throw new InvalidNameException();
@@ -67,7 +64,19 @@ namespace SS {
             }
 
             if (isValidName(name)) {
-                // TODO
+                // Get variables in formula
+                IEnumerable<string> vars = formula.GetVariables();
+                // Get all direct/indirect dependents of the formula
+                HashSet<string> changed = new HashSet<string>(GetCellsToRecalculate(new HashSet<string>(vars)));
+                // Ensure the formula is not circular
+                if (changed.Contains(name)) {
+                    throw new CircularException();
+                }
+                else {
+                    cells[name] = formula;
+                    cellGraph.ReplaceDependees(name, vars);
+                    return new HashSet<string>(GetCellsToRecalculate(name));
+                }
             }
 
             throw new InvalidNameException();

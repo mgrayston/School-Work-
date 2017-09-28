@@ -172,12 +172,14 @@ namespace SpreadsheetUtilities {
             dentGraph[s] = new HashSet<string>();
 
             // Add new t
-            foreach (string t in newDependents) {
-                dentGraph[s].Add(t);
-                if (!deeGraph.ContainsKey(t)) {
-                    deeGraph.Add(t, new HashSet<string>());
+            if (newDependents != null) {
+                foreach (string t in newDependents) {
+                    dentGraph[s].Add(t);
+                    if (!deeGraph.ContainsKey(t)) {
+                        deeGraph.Add(t, new HashSet<string>());
+                    }
+                    deeGraph[t].Add(s);
                 }
-                deeGraph[t].Add(s);
             }
         }
 
@@ -198,12 +200,14 @@ namespace SpreadsheetUtilities {
             deeGraph[s] = new HashSet<string>();
 
             // Add new t
-            foreach (string t in newDependees) {
-                deeGraph[s].Add(t);
-                if (!dentGraph.ContainsKey(t)) {
-                    dentGraph.Add(t, new HashSet<string>());
+            if (newDependees != null) {
+                foreach (string t in newDependees) {
+                    deeGraph[s].Add(t);
+                    if (!dentGraph.ContainsKey(t)) {
+                        dentGraph.Add(t, new HashSet<string>());
+                    }
+                    dentGraph[t].Add(s);
                 }
-                dentGraph[t].Add(s);
             }
         }
     }
