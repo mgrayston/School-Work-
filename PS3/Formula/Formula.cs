@@ -261,7 +261,7 @@ namespace SpreadsheetUtilities {
                         }
                     }
                     catch {
-                        return new FormulaError("Variable " + tokens[token] + " not found");
+                        return new FormulaError("Invalid variable: " + tokens[token]);
                     }
                 }
 
