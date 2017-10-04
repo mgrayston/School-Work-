@@ -1,30 +1,30 @@
-﻿// TODO replace all names with a normalized version
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Xml;
 using SpreadsheetUtilities;
 
-// Written by Christopher Nielson for CS 3500, September 29, 2017
+// Written by Christopher Nielson for CS 3500, October 4, 2017
 
 namespace SS {
     public class Spreadsheet : AbstractSpreadsheet {
         private Dictionary<string, object> contents;    // Dictionary that acts as the "spreadsheet", storing all cells and their contents
         private Dictionary<string, object> values;      // Used to store values of cells
         private DependencyGraph cellGraph;              // Used to track dependencies of all cells
-        private Func<string, bool> isValid;             // Used to test the validity of variables
-        private Func<string, string> normalize;         // Used to normalize variables
-        private string version;                         // Used to track version information of a Spreadsheet
 
         public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
 
+        public Spreadsheet() :
+            this(s => true, s => s, "default") { }
+
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
-            this.isValid = isValid;
-            this.normalize = normalize;
-            this.version = version;
             contents = new Dictionary<string, object>();
             values = new Dictionary<string, object>();
             cellGraph = new DependencyGraph();
+        }
+
+        public Spreadsheet(string file, Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
+            // TODO deal with file
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace SS {
         /// <returns></returns>
         /// <exception cref="InvalidNameException"></exception>
         public override object GetCellContents(string name) {
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
+            if (isValidName(Normalize(name))) {
+                name = Normalize(name);
                 if (contents.ContainsKey(name) && contents[name] != null) {
                     return contents[name];
                 }
@@ -84,18 +84,27 @@ namespace SS {
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public abstract ISet<String> SetContentsOfCell(String name, String content) {
+        public override ISet<String> SetContentsOfCell(String name, String content) {
             if (content == null) {
                 throw new ArgumentNullException("No content passed");
             }
 
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
+            if (isValidName(Normalize(name))) {
+                double tmp;
+                if (double.TryParse(content, out tmp)) {
+                    return SetCellContents(Normalize(name), tmp);
+                }
 
-                // TODO
+                else if (content.StartsWith("=")) {
+                    return SetCellContents(Normalize(name), new Formula(content.Substring(1)));
+                }
+
+                else {
+                    return SetCellContents(Normalize(name), content);
+                }
             }
             else {
-                throw new InvalidNameException(name + " is not a valid name");
+                throw new InvalidNameException();
             }
         }
 
@@ -112,15 +121,11 @@ namespace SS {
         /// <returns></returns>
         /// <exception cref="InvalidNameException"></exception>
         protected override ISet<string> SetCellContents(string name, double number) {
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
-                contents[name] = number;
-                values[name] = number;
-                cellGraph.ReplaceDependees(name, null);
-                return new HashSet<string>(GetCellsToRecalculate(name));
-            }
-
-            throw new InvalidNameException();
+            name = Normalize(name);
+            contents[name] = number;
+            values[name] = number;
+            cellGraph.ReplaceDependees(name, null);
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -138,19 +143,11 @@ namespace SS {
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InvalidNameException"></exception>
         protected override ISet<string> SetCellContents(string name, string text) {
-            if (text == null) {
-                throw new ArgumentNullException(text);
-            }
-
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
-                contents[name] = text;
-                values[name] = text;
-                cellGraph.ReplaceDependees(name, null);
-                return new HashSet<string>(GetCellsToRecalculate(name));
-            }
-
-            throw new InvalidNameException();
+            name = Normalize(name);
+            contents[name] = text;
+            values[name] = text;
+            cellGraph.ReplaceDependees(name, null);
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -170,25 +167,18 @@ namespace SS {
         /// <exception cref="ArgumentNullException">The provided formula was null</exception>
         /// <exception cref="InvalidNameException"></exception>
         protected override ISet<string> SetCellContents(string name, Formula formula) {
-            if (formula == null) {
-                throw new ArgumentNullException("The provided formula was null");
-            }
-
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
-                // Get variables in formula
-                IEnumerable<string> vars = formula.GetVariables();
-                // Get all direct/indirect dependents of the formula
-                HashSet<string> changed = new HashSet<string>(GetCellsToRecalculate(new HashSet<string>(vars)));
-                // Ensure the formula is not circular
-                contents[name] = formula;
-                values[name] = formula.Evaluate(GetCellValue);
-                cellGraph.ReplaceDependees(name, vars);
-                // CircularException will be thrown by GetCelsToRecalculate if needed
-                return new HashSet<string>(GetCellsToRecalculate(name));
-            }
-
-            throw new InvalidNameException();
+            name = Normalize(name);
+            // Get variables in formula
+            IEnumerable<string> vars = formula.GetVariables();
+            // Get all direct/indirect dependents of the formula
+            // TODO
+            // HashSet<string> changed = new HashSet<string>(GetCellsToRecalculate(new HashSet<string>(vars)));
+            // Ensure the formula is not circular
+            contents[name] = formula;
+            values[name] = formula.Evaluate(GetValue);
+            cellGraph.ReplaceDependees(name, vars);
+            // CircularException will be thrown by GetCellsToRecalculate if needed
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -214,8 +204,8 @@ namespace SS {
                 throw new ArgumentNullException(name);
             }
 
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
+            if (isValidName(Normalize(name))) {
+                name = Normalize(name);
                 return cellGraph.GetDependents(name);
             }
 
@@ -233,7 +223,7 @@ namespace SS {
             if (name != null) {
                 if (char.IsLetter(name[0]) || name[0] == '_') {
                     if (name.Length == 1 || !Regex.IsMatch(name.Substring(1), "[^\\d^\\w^_]")) {
-                        if (isValid(name)) {
+                        if (IsValid(name)) {
                             return true;
                         }
                     }
@@ -243,47 +233,46 @@ namespace SS {
             return false;
         }
 
-        /*
-        /// <summary>
-        /// Gets the value of the given variable.
-        /// Used as a delegate for Formula.evaluate to calculate a cell's value.
-        /// </summary>
-        /// <param name="var">The variable.</param>
-        /// <returns></returns>
-        /// <exception cref="FormatException">Variable " + var + " not found</exception>
-        private double getValue(string var) {
-            if (values[var] is double) {
-                return (double)values[var];
-            }
-            else {
-                throw new FormatException("Variable " + var + " not found");
-            }
-        }
-        // TODO deprecated
-        */
-
         public override string GetSavedVersion(string filename) {
             throw new NotImplementedException();
         }
 
         public override void Save(string filename) {
-            throw new NotImplementedException();
+            using (XmlWriter writer = XmlWriter.Create(filename)) {
+            }
         }
 
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="FormatException">Variable " + name + " not found</exception>
         public override object GetCellValue(string name) {
-            if (isValidName(normalize(name))) {
-                name = normalize(name);
+            if (isValidName(Normalize(name))) {
+                name = Normalize(name);
 
-                if (values[name] is double) {
-                    return (double)values[name];
+                if (values.ContainsKey(name)) {
+                    return values[name];
                 }
+
+                return "";
             }
 
-            throw new FormatException("Variable " + name + " not found");
+            throw new InvalidNameException();
         }
 
-        public override ISet<string> SetContentsOfCell(string name, string content) {
-            throw new NotImplementedException();
+        // Convenience method for GetCellValue, to be used as a lookup delegate.
+        private double GetValue(string name) {
+            object val = GetCellValue(name);
+
+            if (val is double) {
+                return (double)val;
+            }
+
+            throw new ArgumentException();
         }
     }
 }
