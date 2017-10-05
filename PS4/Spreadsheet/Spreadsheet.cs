@@ -11,10 +11,12 @@ namespace SS {
         private Dictionary<string, object> contents;    // Dictionary that acts as the "spreadsheet", storing all cells and their contents
         private Dictionary<string, object> values;      // Used to store values of cells
         private DependencyGraph cellGraph;              // Used to track dependencies of all cells
+        private Func<string, bool> defaultValid = s => Regex.IsMatch(s, "^[a-zA-Z]+\\d+&");
 
         public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
 
         public Spreadsheet() :
+            //this(defaultValid, s => s, "default") { }
             this(s => true, s => s, "default") { }
 
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
@@ -96,7 +98,7 @@ namespace SS {
                 }
 
                 else if (content.StartsWith("=")) {
-                    return SetCellContents(Normalize(name), new Formula(content.Substring(1)));
+                    return SetCellContents(Normalize(name), new Formula(content.Substring(1), Normalize, IsValid));
                 }
 
                 else {
@@ -205,8 +207,7 @@ namespace SS {
             }
 
             if (isValidName(Normalize(name))) {
-                name = Normalize(name);
-                return cellGraph.GetDependents(name);
+                return cellGraph.GetDependents(Normalize(name));
             }
 
             throw new InvalidNameException();
@@ -233,12 +234,79 @@ namespace SS {
             return false;
         }
 
+        /// <summary>
+        /// Returns the version information of the spreadsheet saved in the named file.
+        /// If there are any problems opening, reading, or closing the file, the method
+        /// should throw a SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        /// <exception cref="SpreadsheetReadWriteException">Error occured while retrieving version information in " + filename + ":\n" + e.Message</exception>
         public override string GetSavedVersion(string filename) {
-            throw new NotImplementedException();
+            try {
+                using (XmlReader reader = XmlReader.Create(filename)) {
+                    reader.ReadToFollowing("spreadsheet");
+                    return reader.GetAttribute("version");
+                }
+            }
+            catch (Exception e) {
+                throw new SpreadsheetReadWriteException("Error occured while retrieving version information in " + filename + ":\n" + e.Message);
+            }
         }
 
+        /// <summary>
+        /// Writes the contents of this spreadsheet to the named file using an XML format.
+        /// The XML elements should be structured as follows:
+        /// <spreadsheet version="version information goes here"><cell><name>
+        /// cell name goes here
+        /// </name><contents>
+        /// cell contents goes here
+        /// </contents></cell></spreadsheet>
+        /// There should be one cell element for each non-empty cell in the spreadsheet.
+        /// If the cell contains a string, it should be written as the contents.
+        /// If the cell contains a double d, d.ToString() should be written as the contents.
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        /// If there are any problems opening, writing, or closing the file, the method should throw a
+        /// SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <exception cref="SpreadsheetReadWriteException">Error occured while saving:\n" + e.Message</exception>
         public override void Save(string filename) {
-            using (XmlWriter writer = XmlWriter.Create(filename)) {
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.IndentChars = "    ";
+
+            try {
+                using (XmlWriter writer = XmlWriter.Create(filename, settings)) {
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("spreadsheet");
+                    writer.WriteAttributeString("version", Version);
+                    foreach (String cell in GetNamesOfAllNonemptyCells()) {
+                        writer.WriteStartElement("cell");
+                        writer.WriteElementString("name", cell);
+                        writer.WriteStartElement("contents");
+                        object cellContents = GetCellContents(cell);
+
+                        // Write depending on type of contents
+                        switch (cellContents.GetType().Name) {
+                            case "String":
+                                writer.WriteString((string)cellContents);
+                                break;
+                            case "Double":
+                                writer.WriteString(((double)cellContents).ToString());
+                                break;
+                            case "Formula":
+                                writer.WriteString("=" + ((Formula)cellContents).ToString());
+                                break;
+                        }
+                        writer.WriteEndElement();   // End of contents
+                        writer.WriteEndElement();   // End of cell
+                    }
+                    writer.WriteEndElement();       // End of spreadsheet
+                }
+            }
+            catch (Exception e) {
+                throw new SpreadsheetReadWriteException("Error occured while saving:\n" + e.Message);
             }
         }
 
@@ -264,7 +332,12 @@ namespace SS {
             throw new InvalidNameException();
         }
 
-        // Convenience method for GetCellValue, to be used as a lookup delegate.
+        /// <summary>
+        /// Convenience method for GetCellValue, to be used as a lookup delegate.        
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         private double GetValue(string name) {
             object val = GetCellValue(name);
 
