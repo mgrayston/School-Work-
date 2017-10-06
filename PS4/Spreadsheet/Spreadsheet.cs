@@ -25,7 +25,13 @@ namespace SS {
         /// </summary>
         /// <returns></returns>
         public override IEnumerable<string> GetNamesOfAllNonemptyCells() {
-            return new List<string>(contents.Keys);
+            List<string> keys = new List<string>();
+            foreach (string key in contents.Keys) {
+                if (!values[key].Equals("")) {
+                    keys.Add(key);
+                }
+            }
+            return keys;
         }
 
         /// <summary>
