@@ -5,6 +5,7 @@ using System.Xml;
 using SpreadsheetUtilities;
 
 // Written by Christopher Nielson for CS 3500, October 4, 2017
+// V1.0 Fully working; passes PS4 tests as well as personal tests.
 
 namespace SS {
     public class Spreadsheet : AbstractSpreadsheet {
@@ -54,7 +55,13 @@ namespace SS {
         /// </summary>
         /// <returns></returns>
         public override IEnumerable<string> GetNamesOfAllNonemptyCells() {
-            return new List<string>(contents.Keys);
+            List<string> keys = new List<string>();
+            foreach (string key in contents.Keys) {
+                if (!values[key].Equals("")) {
+                    keys.Add(key);
+                }
+            }
+            return keys;
         }
 
         /// <summary>
@@ -202,8 +209,15 @@ namespace SS {
         protected override ISet<string> SetCellContents(string name, Formula formula) {
             name = Normalize(name);
             // Get variables in formula
-            IEnumerable<string> vars = formula.GetVariables();
-            // Ensure the formula is not circular
+            HashSet<string> vars = new HashSet<string>(formula.GetVariables());
+            // Ensure the formula is not circular; checks each variable in the new formula
+            foreach (string var in GetCellsToRecalculate(new HashSet<string>() { name })) {
+                if (vars.Contains(var)) {
+                    throw new CircularException();
+                }
+            }
+
+
             contents[name] = formula;
             values[name] = formula.Evaluate(GetValue);
             cellGraph.ReplaceDependees(name, vars);

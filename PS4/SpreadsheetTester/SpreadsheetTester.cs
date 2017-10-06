@@ -143,7 +143,7 @@ namespace SpreadsheetTester {
         [ExpectedException(typeof(ArgumentNullException))]
         public void NullArgumentSetText() {
             Spreadsheet s = new Spreadsheet();
-            s.SetContentsOfCell("a1", (string) null);
+            s.SetContentsOfCell("a1", (string)null);
         }
 
         // Deprecated test; cannot pass Formulas, only Strings
@@ -157,7 +157,7 @@ namespace SpreadsheetTester {
             s.SetContentsOfCell("a1", f);
         }
         */
-        
+
         // Deprecated test; new specification in PS5
         /*
         // Ensure variables of length one are valid
@@ -297,6 +297,22 @@ namespace SpreadsheetTester {
         [ExpectedExceptionAttribute(typeof(SpreadsheetReadWriteException))]
         public void ConstrucFromInvalidFile() {
             Spreadsheet s = new Spreadsheet("fakefile", f => true, f => f, "fake");
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(CircularException))]
+        public void TestUndoCircular() {
+            Spreadsheet s = new Spreadsheet();
+            try {
+                s.SetContentsOfCell("A1", "=A2+A3");
+                s.SetContentsOfCell("A2", "15");
+                s.SetContentsOfCell("A3", "30");
+                s.SetContentsOfCell("A2", "=A3*A1");
+            }
+            catch (CircularException e) {
+                Assert.AreEqual(15, (double)s.GetCellContents("A2"), 1e-9);
+                throw e;
+            }
         }
     }
 }
