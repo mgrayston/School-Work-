@@ -11,12 +11,10 @@ namespace SS {
         private Dictionary<string, object> contents;    // Dictionary that acts as the "spreadsheet", storing all cells and their contents
         private Dictionary<string, object> values;      // Used to store values of cells
         private DependencyGraph cellGraph;              // Used to track dependencies of all cells
-        private Func<string, bool> defaultValid = s => Regex.IsMatch(s, "^[a-zA-Z]+\\d+&");
 
         public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
 
         public Spreadsheet() :
-            //this(defaultValid, s => s, "default") { }
             this(s => true, s => s, "default") { }
 
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
@@ -92,17 +90,18 @@ namespace SS {
             }
 
             if (isValidName(Normalize(name))) {
+                name = Normalize(name);
                 double tmp;
                 if (double.TryParse(content, out tmp)) {
-                    return SetCellContents(Normalize(name), tmp);
+                    return SetCellContents(name, tmp);
                 }
 
                 else if (content.StartsWith("=")) {
-                    return SetCellContents(Normalize(name), new Formula(content.Substring(1), Normalize, IsValid));
+                    return SetCellContents(name, new Formula(content.Substring(1), Normalize, isValidName));
                 }
 
                 else {
-                    return SetCellContents(Normalize(name), content);
+                    return SetCellContents(name, content);
                 }
             }
             else {
@@ -222,12 +221,8 @@ namespace SS {
         /// </returns>
         private bool isValidName(string name) {
             if (name != null) {
-                if (char.IsLetter(name[0]) || name[0] == '_') {
-                    if (name.Length == 1 || !Regex.IsMatch(name.Substring(1), "[^\\d^\\w^_]")) {
-                        if (IsValid(name)) {
-                            return true;
-                        }
-                    }
+                if (defaultValid(name) && IsValid(name)) {
+                    return true;
                 }
             }
 
@@ -278,7 +273,6 @@ namespace SS {
 
             try {
                 using (XmlWriter writer = XmlWriter.Create(filename, settings)) {
-                    writer.WriteStartDocument();
                     writer.WriteStartElement("spreadsheet");
                     writer.WriteAttributeString("version", Version);
                     foreach (String cell in GetNamesOfAllNonemptyCells()) {
@@ -347,5 +341,9 @@ namespace SS {
 
             throw new ArgumentException();
         }
+
+        // Private function to test base validity of a variable, as described
+        // in the specification.
+        private Func<string, bool> defaultValid = s => Regex.IsMatch(s, "^[a-zA-Z]+(\\d+)$");
     }
 }

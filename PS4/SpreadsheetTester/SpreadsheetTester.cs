@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
 using SS;
@@ -37,35 +38,33 @@ namespace SpreadsheetTester {
 
         [TestMethod]
         public void ValueTest() {
-            Spreadsheet s = new Spreadsheet();
-            PrivateObject saccess = new PrivateObject(s);
+            Spreadsheet s = new Spreadsheet(var => true, var => var.ToUpper(), "default");
 
             s.SetContentsOfCell("A1", "3");
             s.SetContentsOfCell("B1", "hello");
-            s.SetContentsOfCell("_C39", "13");
-            s.SetContentsOfCell("A2", "=" + new Formula("a1*_c39", var => var.ToUpper(), var => true).ToString());
+            s.SetContentsOfCell("cC39", "13");
+            s.SetContentsOfCell("A2", "=a1*cc39");
 
-            Assert.AreEqual((double)3, ((Dictionary<string, object>)saccess.GetField("values"))["A1"]);
-            Assert.AreEqual("hello", ((Dictionary<string, object>)saccess.GetField("values"))["B1"]);
-            Assert.AreEqual((double)13, ((Dictionary<string, object>)saccess.GetField("values"))["_C39"]);
-            Assert.AreEqual((double)39, ((Dictionary<string, object>)saccess.GetField("values"))["A2"]);
+            Assert.AreEqual((double)3, s.GetCellValue("a1"));
+            Assert.AreEqual("hello", s.GetCellValue("b1"));
+            Assert.AreEqual((double)13, s.GetCellValue("cc39"));
+            Assert.AreEqual((double)39, s.GetCellValue("a2"));
         }
 
         [TestMethod]
         public void FormulaValueMissingVariableTest() {
             Spreadsheet s = new Spreadsheet();
-            PrivateObject saccess = new PrivateObject(s);
 
-            s.SetContentsOfCell("a1", "=" + new Formula("b1").ToString());
-            Assert.IsTrue(((Dictionary<string, object>)saccess.GetField("values"))["a1"] is FormulaError);
+            s.SetContentsOfCell("a1", "=b1");
+            Assert.IsTrue(s.GetCellValue("a1") is FormulaError);
         }
 
         [TestMethod]
         [ExpectedException(typeof(CircularException))]
         public void CircularExceptionTest() {
             Spreadsheet s = new Spreadsheet();
-            s.SetContentsOfCell("a1", "=" + new Formula("b1").ToString());
-            s.SetContentsOfCell("b1", "=" + new Formula("a1").ToString());
+            s.SetContentsOfCell("a1", "=b1");
+            s.SetContentsOfCell("b1", "=a1");
         }
 
         [TestMethod]
@@ -86,7 +85,7 @@ namespace SpreadsheetTester {
         [ExpectedException(typeof(InvalidNameException))]
         public void SetCellFormulaInvalidNameTest() {
             Spreadsheet s = new Spreadsheet();
-            s.SetContentsOfCell("3", "=" + new Formula("3 + 7").ToString());
+            s.SetContentsOfCell("3", "=3 + 7");
         }
 
         [TestMethod]
@@ -156,12 +155,15 @@ namespace SpreadsheetTester {
         }
         */
         
+        // Deprecated test; new specification in PS5
+        /*
         // Ensure variables of length one are valid
         [TestMethod]
         public void SingleLetterVariable() {
             Spreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("a", "3");
         }
+        */
 
         // Ensure variables don't allow symbols
         [TestMethod]
@@ -206,9 +208,30 @@ namespace SpreadsheetTester {
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void InvalidFormula() {
+        public void InvalidVariable() {
             Spreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("a1", "=!a");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void InvalidVariableFromPassedValidator() {
+            Spreadsheet s = new Spreadsheet(f => !Regex.IsMatch(f, "[a-z]"), f => f, "default");
+            s.SetContentsOfCell("a1", "3");
+        }
+
+        [TestMethod]
+        public void ValidVariableFromPassedValidator() {
+            Spreadsheet s = new Spreadsheet(f => !Regex.IsMatch(f, "[a-z]"), f => f, "default");
+            s.SetContentsOfCell("A1", "3");
+        }
+
+        [TestMethod]
+        public void SaveTest() {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("a1", "3");
+            s.SetContentsOfCell("a2", "=a1*2");
+            s.Save("test.xml");
         }
     }
 }
