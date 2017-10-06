@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Formula", "Formula\Formula.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormulaTester", "FormulaTester\FormulaTester.csproj", "{D696CE8C-C7FC-4120-8E67-398503C56562}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GradingTests", "GradingTests\GradingTests.csproj", "{BC3948B4-FB6E-41E3-9125-6A924C3EE032}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D696CE8C-C7FC-4120-8E67-398503C56562}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D696CE8C-C7FC-4120-8E67-398503C56562}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D696CE8C-C7FC-4120-8E67-398503C56562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC3948B4-FB6E-41E3-9125-6A924C3EE032}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC3948B4-FB6E-41E3-9125-6A924C3EE032}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC3948B4-FB6E-41E3-9125-6A924C3EE032}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC3948B4-FB6E-41E3-9125-6A924C3EE032}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

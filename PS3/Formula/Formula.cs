@@ -18,6 +18,12 @@
 //  (Version 1.2) Changed the definition of equality with regards
 //                to numeric tokens
 
+// (Christopher Nielson)
+//  (Version 1.3) Working version submitted for homework
+//  (Version 1.4) Fixed issues with invalidFollowing function;
+//      was including '-' in scientific notation as an operator and returning 
+//      invalid result.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,7 +103,7 @@ namespace SpreadsheetUtilities {
             // Checks if the token following the provided index is valid (i.e. an operator or right parenthesis), or nothing; can be negated for the left parenthesis and operator cases. 
             // Returns true if the next token is invalid (not an operator or parenthesis).
             bool invalidFollowing(int index) {
-                return (index + 1) < tokens.Count() ? !Regex.IsMatch(tokens.ElementAt(index + 1), String.Format("{0}|{1}", opPattern, rpPattern)) : false;
+                return (index + 1) < tokens.Count() ? !Regex.IsMatch(tokens.ElementAt(index + 1), String.Format("^{0}|^{1}", opPattern, rpPattern)) : false;
             }
 
             // No tokens
@@ -106,12 +112,12 @@ namespace SpreadsheetUtilities {
             }
 
             // Invalid first token
-            if (Regex.IsMatch(tokens.First(), String.Format("{0}|{1}", rpPattern, opPattern))) {
+            if (Regex.IsMatch(tokens.First(), String.Format("^{0}|^{1}", rpPattern, opPattern))) {
                 throw new FormulaFormatException("Invalid first token: " + tokens.First());
             }
 
             // Invalid last token
-            if (Regex.IsMatch(tokens.Last(), String.Format("{0}|{1}", lpPattern, opPattern))) {
+            if (Regex.IsMatch(tokens.Last(), String.Format("^{0}|^{1}", lpPattern, opPattern))) {
                 throw new FormulaFormatException("Invalid last token: " + tokens.Last());
             }
 

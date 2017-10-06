@@ -5,6 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
 using SS;
 
+// Chritopher Nielson
+// Version 1.1 - Adapted from PS4 tests; achieves 98.5% code coverage.
+
 namespace SpreadsheetTester {
     [TestClass]
     public class SpreadsheetTester {
@@ -231,7 +234,69 @@ namespace SpreadsheetTester {
             Spreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("a1", "3");
             s.SetContentsOfCell("a2", "=a1*2");
+            s.SetContentsOfCell("a3", "helloWorld");
             s.Save("test.xml");
+        }
+
+        [TestMethod]
+        public void GetVersion() {
+            Spreadsheet s = new Spreadsheet();
+            s.Save("test.xml");
+            Assert.AreEqual("default", s.GetSavedVersion("test.xml"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void GetVersionInvalidFile() {
+            Spreadsheet s = new Spreadsheet();
+            s.GetSavedVersion("fakefile");
+        }
+
+        [TestMethod]
+        public void IsChangedTester() {
+            Spreadsheet s = new Spreadsheet();
+            Assert.IsFalse(s.Changed);
+            s.SetContentsOfCell("a1", "3");
+            Assert.IsTrue(s.Changed);
+            s.Save("Test.xml");
+            Assert.IsFalse(s.Changed);
+        }
+
+        [TestMethod]
+        public void TestConstructorFromFile() {
+            Spreadsheet s1 = new Spreadsheet();
+            s1.SetContentsOfCell("a1", "3");
+            s1.SetContentsOfCell("a2", "4");
+            s1.SetContentsOfCell("a3", "=a1*a2/6");
+            s1.Save("test.xml");
+            Spreadsheet s2 = new Spreadsheet("test.xml", s => true, s => s, "1.0");
+            Assert.AreEqual((double)2, s1.GetCellValue("a3"));
+            Assert.AreEqual((double)2, s2.GetCellValue("a3"));
+            Assert.IsFalse(s1.Changed);
+            Assert.AreEqual(s1.GetCellValue("a3"), s2.GetCellValue("a3"));
+            Assert.IsTrue(s2.Changed);
+            s2.Save("text.xml");
+            Assert.IsFalse(s2.Changed);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void InvalidNameGetContents() {
+            Spreadsheet s = new Spreadsheet();
+            s.GetCellContents("_a");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void InvalidNameGetValue() {
+            Spreadsheet s = new Spreadsheet();
+            s.GetCellValue("_a");
+        }
+
+        [TestMethod]
+        [ExpectedExceptionAttribute(typeof(SpreadsheetReadWriteException))]
+        public void ConstrucFromInvalidFile() {
+            Spreadsheet s = new Spreadsheet("fakefile", f => true, f => f, "fake");
         }
     }
 }

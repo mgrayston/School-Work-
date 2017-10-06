@@ -11,8 +11,9 @@ namespace SS {
         private Dictionary<string, object> contents;    // Dictionary that acts as the "spreadsheet", storing all cells and their contents
         private Dictionary<string, object> values;      // Used to store values of cells
         private DependencyGraph cellGraph;              // Used to track dependencies of all cells
+        private bool changed;
 
-        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
+        public override bool Changed { get; protected set; }
 
         public Spreadsheet() :
             this(s => true, s => s, "default") { }
@@ -21,10 +22,31 @@ namespace SS {
             contents = new Dictionary<string, object>();
             values = new Dictionary<string, object>();
             cellGraph = new DependencyGraph();
+            Changed = false;
         }
 
         public Spreadsheet(string file, Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
-            // TODO deal with file
+            contents = new Dictionary<string, object>();
+            values = new Dictionary<string, object>();
+            cellGraph = new DependencyGraph();
+            Changed = false;
+
+            try {
+                using (XmlReader reader = XmlReader.Create(file)) {
+                    while (reader.ReadToFollowing("cell")) {
+                        reader.ReadToDescendant("name");
+                        reader.Read();
+                        string name = reader.Value;
+                        reader.ReadToFollowing("contents");
+                        reader.Read();
+                        string contents = reader.Value;
+                        SetContentsOfCell(name, contents);
+                    }
+                }
+            }
+            catch (Exception e) {
+                throw new SpreadsheetReadWriteException("Error creating spreadsheet from the provided file " + file + "\nResult: " + e.Message);
+            }
         }
 
         /// <summary>
@@ -126,7 +148,12 @@ namespace SS {
             contents[name] = number;
             values[name] = number;
             cellGraph.ReplaceDependees(name, null);
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            Changed = true;
+            LinkedList<string> changed = new LinkedList<string>(GetCellsToRecalculate(name));
+            foreach (string var in changed) {
+                recalculate(var);
+            }
+            return new HashSet<string>(changed);
         }
 
         /// <summary>
@@ -148,7 +175,12 @@ namespace SS {
             contents[name] = text;
             values[name] = text;
             cellGraph.ReplaceDependees(name, null);
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            Changed = true;
+            LinkedList<string> changed = new LinkedList<string>(GetCellsToRecalculate(name));
+            foreach (string var in changed) {
+                recalculate(var);
+            }
+            return new HashSet<string>(changed);
         }
 
         /// <summary>
@@ -171,15 +203,17 @@ namespace SS {
             name = Normalize(name);
             // Get variables in formula
             IEnumerable<string> vars = formula.GetVariables();
-            // Get all direct/indirect dependents of the formula
-            // TODO
-            // HashSet<string> changed = new HashSet<string>(GetCellsToRecalculate(new HashSet<string>(vars)));
             // Ensure the formula is not circular
             contents[name] = formula;
             values[name] = formula.Evaluate(GetValue);
             cellGraph.ReplaceDependees(name, vars);
+            Changed = true;
             // CircularException will be thrown by GetCellsToRecalculate if needed
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            LinkedList<string> changed = new LinkedList<string>(GetCellsToRecalculate(name));
+            foreach (string var in changed) {
+                recalculate(var);
+            }
+            return new HashSet<string>(changed);
         }
 
         /// <summary>
@@ -273,6 +307,7 @@ namespace SS {
 
             try {
                 using (XmlWriter writer = XmlWriter.Create(filename, settings)) {
+                    writer.WriteStartDocument();
                     writer.WriteStartElement("spreadsheet");
                     writer.WriteAttributeString("version", Version);
                     foreach (String cell in GetNamesOfAllNonemptyCells()) {
@@ -297,7 +332,10 @@ namespace SS {
                         writer.WriteEndElement();   // End of cell
                     }
                     writer.WriteEndElement();       // End of spreadsheet
+                    writer.WriteEndDocument();      // End of document
                 }
+
+                Changed = false;
             }
             catch (Exception e) {
                 throw new SpreadsheetReadWriteException("Error occured while saving:\n" + e.Message);
@@ -317,6 +355,9 @@ namespace SS {
                 name = Normalize(name);
 
                 if (values.ContainsKey(name)) {
+                    if (values[name] is double) {
+                        return (double)values[name];
+                    }
                     return values[name];
                 }
 
@@ -345,5 +386,12 @@ namespace SS {
         // Private function to test base validity of a variable, as described
         // in the specification.
         private Func<string, bool> defaultValid = s => Regex.IsMatch(s, "^[a-zA-Z]+(\\d+)$");
+
+        // Private method used to recalculate dependents after a cell is changed.
+        private void recalculate(string name) {
+            if (contents[name] is Formula) {
+                values[name] = ((Formula)contents[name]).Evaluate(GetValue);
+            }
+        }
     }
 }
