@@ -35,8 +35,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Formula.dll" />
+    <Content Include="Formula.xml" />
+    <Content Include="README.txt" />
+    <Content Include="Spreadsheet.dll" />
+    <Content Include="Spreadsheet.xml" />
     <Content Include="SpreadsheetPanel.dll" />
     <Content Include="SpreadsheetPanel.XML" />
+    <Content Include="SpreadsheetUtilities.dll" />
+    <Content Include="SpreadsheetUtilities.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
