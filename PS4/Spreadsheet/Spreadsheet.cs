@@ -211,7 +211,8 @@ namespace SS {
             // Get variables in formula
             HashSet<string> vars = new HashSet<string>(formula.GetVariables());
             // Ensure the formula is not circular; checks each variable in the new formula
-            foreach (string var in GetCellsToRecalculate(new HashSet<string>() { name })) {
+            IEnumerable<string> changed = new List<string>(GetCellsToRecalculate(name));
+            foreach (string var in changed) {
                 if (vars.Contains(var)) {
                     throw new CircularException();
                 }
@@ -223,7 +224,6 @@ namespace SS {
             cellGraph.ReplaceDependees(name, vars);
             Changed = true;
             // CircularException will be thrown by GetCellsToRecalculate if needed
-            LinkedList<string> changed = new LinkedList<string>(GetCellsToRecalculate(name));
             foreach (string var in changed) {
                 recalculate(var);
             }
