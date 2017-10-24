@@ -1,3 +1,9 @@
-﻿Author: Christopher Nielson, created September 23, 2017
-V1.2 Ran code against grading tests. Edited GetNamesOfAllNonEmptyCells method to exclude cells containing "". The other failed test depended on evaluating cells after a dependee was changed, which had not been implemented. This will be changed in PS5.
-	
+﻿Author: Christopher Nielson, created October 3, 2017
+Estimated time to build: 5-7 hours
+Actual time: 8 hours
+
+--October 5 2017
+Decided to  implement without separate cell class. There are methods in place to simply deal with cells as two dictionaries, tracking their contents and values.
+
+--October 6 2017
+V 1.0: Built against V1.1 of PS2 and V1.4 of PS3. Fully working, and passes all tests. This is the version that will be submitted for grading.

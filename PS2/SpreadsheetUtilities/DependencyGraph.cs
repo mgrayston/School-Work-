@@ -2,6 +2,7 @@
 // Version 1.1 (Fixed error in comment for RemoveDependency.)
 
 // Code by Christopher Nielson, September 2017
+// V 1.1 Working; any failed tests are fixed.
 
 using System.Collections.Generic;
 
