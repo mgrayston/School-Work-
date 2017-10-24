@@ -18,5 +18,15 @@ namespace SpreadsheetGUI {
             ss = new Spreadsheet(s => true, s => s, "ps6");
             InitializeComponent();
         }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void text_box_contents_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
