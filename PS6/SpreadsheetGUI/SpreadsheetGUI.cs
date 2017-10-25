@@ -100,9 +100,17 @@ namespace SpreadsheetGUI {
             }
         }
 
+        /// <summary>
+        /// From the menu bar, "open" button opens a new GUI window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void newButton_Click(object sender, EventArgs e)
         {
-            //TODO
+            SpreadsheetGUI newWindow = new SpreadsheetGUI();
+            int count = SSApplicationContext.getAppContext().RunWindow(newWindow);
+            newWindow.Text = "Spreadsheet " + count; // change spreadsheet title
         }
     }
 }
+    
