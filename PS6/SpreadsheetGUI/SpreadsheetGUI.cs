@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SS;
+using System.IO;
 
 namespace SpreadsheetGUI {
     public partial class SpreadsheetGUI : Form {
@@ -42,6 +43,66 @@ namespace SpreadsheetGUI {
 
         private string getCellName(int col, int row) {
             return (char)(col + 65) + "" + (row + 1);
+        }
+
+        /// <summary>
+        /// Closes the GUI from the menu bar close button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void closeButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        /// <summary>
+        /// Open button from file menu bar opens a file explorer, so a file can be opened. 
+        /// .sprd files are only displayed by default, but all file types can also be shown 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void openButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Open File";
+            ofd.Filter = "Spreadsheet (*.sprd)|*.sprd | All Files (*.*)|*.*"; //displays only .sprd by default, else all files
+            if(ofd.ShowDialog() == DialogResult.OK)
+            {
+                StreamReader readFile = new StreamReader(File.OpenRead(ofd.FileName));
+
+                //TODO - Take read file and place into spreadsheet
+
+                //TODO - Check for invalid file type?
+
+                //TODO - Open in new window could be an additional feature
+            }
+
+        }
+
+        /// <summary>
+        /// Save button from file menu bar opens a file explorer, so that a file can be save
+        /// .sprd is default save type. All file types and .txt are also available
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void saveButton_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Save File";
+            sfd.Filter = "Spreadsheet (*.sprd)|*.sprd | All Files (*.*)|*.* |Text File (*.txt)|*.txt" ; 
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter writeFile = new StreamWriter(File.Create(sfd.FileName));
+
+                //TODO - write spreadsheet into xml
+
+               
+            }
+        }
+
+        private void newButton_Click(object sender, EventArgs e)
+        {
+            //TODO
         }
     }
 }
