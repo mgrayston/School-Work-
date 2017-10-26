@@ -11,15 +11,16 @@ using SS;
 using System.IO;
 using System.Threading;
 using SpreadsheetUtilities;
+using System.Text.RegularExpressions;
 
 namespace SpreadsheetGUI {
     public partial class SpreadsheetGUI : Form {
 
         private Spreadsheet ss; // Backing Spreadsheet for this GUI
+        private string validVariable = "^[A-Z]{1}[1-99]$";
 
-        // TODO make constructor for use with 'open' button
         public SpreadsheetGUI() {
-            ss = new Spreadsheet(s => true, s => s.ToUpper(), "ps6");
+            ss = new Spreadsheet(s => Regex.IsMatch(s, validVariable), s => s.ToUpper(), "ps6");
             InitializeComponent();
             refreshCell("A1");
             contentsBox.Focus();    // TODO not working..?
@@ -105,9 +106,15 @@ namespace SpreadsheetGUI {
         private void openButton_Click(object sender, EventArgs e) {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Title = "Open File";
-            ofd.Filter = "Spreadsheet (*.sprd)|*.sprd | All Files (*.*)|*.*"; //displays only .sprd by default, else all files
+            ofd.Filter = "Spreadsheet (*.sprd)|*.sprd|All Files (*.*)|*.*"; // displays only .sprd by default, else all files
             if (ofd.ShowDialog() == DialogResult.OK) {
-                StreamReader readFile = new StreamReader(File.OpenRead(ofd.FileName)); // should use Spreadsheet open function; open in new windows. Probably requires a new constructor for gui.
+                // TODO check for unsaved work before saving and prompt
+                ss = new Spreadsheet(ofd.FileName, s => Regex.IsMatch(s, validVariable), s => s.ToUpper(), "ps6");
+                panel.Clear();
+                updateCells(new HashSet<string>(ss.GetNamesOfAllNonemptyCells()));
+                int col, row;
+                panel.GetSelection(out col, out row);
+                refreshCell(getCellName(col, row));
 
                 //TODO - Check for invalid file type?
             }
@@ -122,7 +129,7 @@ namespace SpreadsheetGUI {
         private void saveButton_Click(object sender, EventArgs e) {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Title = "Save File";
-            sfd.Filter = "Spreadsheet (*.sprd)|*.sprd | All Files (*.*)|*.* |Text File (*.txt)|*.txt";
+            sfd.Filter = "Spreadsheet (*.sprd)|*.sprd|All Files (*.*)|*.* |Text File (*.txt)|*.txt";
             if (sfd.ShowDialog() == DialogResult.OK) {
                 ss.Save(sfd.FileName);
             }

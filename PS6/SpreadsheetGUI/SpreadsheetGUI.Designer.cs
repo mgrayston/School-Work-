@@ -124,8 +124,7 @@
             // 
             // cellBox
             // 
-            this.cellBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cellBox.Location = new System.Drawing.Point(268, 8);
+            this.cellBox.Location = new System.Drawing.Point(286, 8);
             this.cellBox.Margin = new System.Windows.Forms.Padding(6);
             this.cellBox.MaxLength = 3;
             this.cellBox.Name = "cellBox";
@@ -135,18 +134,16 @@
             // 
             // valueBox
             // 
-            this.valueBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.valueBox.Location = new System.Drawing.Point(495, 7);
+            this.valueBox.Location = new System.Drawing.Point(449, 8);
             this.valueBox.Margin = new System.Windows.Forms.Padding(6);
             this.valueBox.Name = "valueBox";
             this.valueBox.ReadOnly = true;
-            this.valueBox.Size = new System.Drawing.Size(172, 31);
+            this.valueBox.Size = new System.Drawing.Size(222, 31);
             this.valueBox.TabIndex = 2;
             // 
             // contentsBox
             // 
-            this.contentsBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.contentsBox.Location = new System.Drawing.Point(891, 8);
+            this.contentsBox.Location = new System.Drawing.Point(799, 7);
             this.contentsBox.Margin = new System.Windows.Forms.Padding(6);
             this.contentsBox.Name = "contentsBox";
             this.contentsBox.Size = new System.Drawing.Size(598, 31);
@@ -154,10 +151,9 @@
             // 
             // label_name
             // 
-            this.label_name.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label_name.AutoSize = true;
             this.label_name.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.label_name.Location = new System.Drawing.Point(182, 11);
+            this.label_name.Location = new System.Drawing.Point(200, 11);
             this.label_name.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label_name.Name = "label_name";
             this.label_name.Size = new System.Drawing.Size(74, 25);
@@ -167,10 +163,9 @@
             // 
             // label_value
             // 
-            this.label_value.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label_value.AutoSize = true;
             this.label_value.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.label_value.Location = new System.Drawing.Point(410, 11);
+            this.label_value.Location = new System.Drawing.Point(364, 10);
             this.label_value.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label_value.Name = "label_value";
             this.label_value.Size = new System.Drawing.Size(73, 25);
@@ -180,10 +175,9 @@
             // 
             // label_contents
             // 
-            this.label_contents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label_contents.AutoSize = true;
             this.label_contents.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.label_contents.Location = new System.Drawing.Point(775, 11);
+            this.label_contents.Location = new System.Drawing.Point(683, 10);
             this.label_contents.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label_contents.Name = "label_contents";
             this.label_contents.Size = new System.Drawing.Size(104, 25);
@@ -193,11 +187,10 @@
             // 
             // EnterButton
             // 
-            this.EnterButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EnterButton.Location = new System.Drawing.Point(1499, 1);
+            this.EnterButton.Location = new System.Drawing.Point(1407, 3);
             this.EnterButton.Margin = new System.Windows.Forms.Padding(4);
             this.EnterButton.Name = "EnterButton";
-            this.EnterButton.Size = new System.Drawing.Size(84, 44);
+            this.EnterButton.Size = new System.Drawing.Size(84, 39);
             this.EnterButton.TabIndex = 4;
             this.EnterButton.Text = "Enter";
             this.EnterButton.UseVisualStyleBackColor = true;
