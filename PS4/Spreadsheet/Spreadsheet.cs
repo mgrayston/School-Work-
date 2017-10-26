@@ -6,19 +6,39 @@ using SpreadsheetUtilities;
 
 // Written by Christopher Nielson for CS 3500, October 4, 2017
 // V1.0 Fully working; passes PS4 tests as well as personal tests.
+// V1.1 Updated to pass PS5 tests. --26 October 2017
 
 namespace SS {
+    /// <summary>
+    /// Representation of a Spreadsheet object. Capable of saving and opening from files, 
+    /// and distinguishing between Formulas, strings, and doubles. Stores both values and 
+    /// contents of all cells.
+    /// </summary>
+    /// <seealso cref="SS.AbstractSpreadsheet" />
     public class Spreadsheet : AbstractSpreadsheet {
         private Dictionary<string, object> contents;    // Dictionary that acts as the "spreadsheet", storing all cells and their contents
         private Dictionary<string, object> values;      // Used to store values of cells
         private DependencyGraph cellGraph;              // Used to track dependencies of all cells
-        private bool changed;
 
+        /// <summary>
+        /// True if this spreadsheet has been modified since it was created or saved
+        /// (whichever happened most recently); false otherwise.
+        /// </summary>
         public override bool Changed { get; protected set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Spreadsheet"/> class.
+        /// </summary>
         public Spreadsheet() :
             this(s => true, s => s, "default") { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Spreadsheet"/> class, using the provided 
+        /// isValid and normalize Funcs, and provided version.
+        /// </summary>
+        /// <param name="isValid"></param>
+        /// <param name="normalize"></param>
+        /// <param name="version"></param>
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
             contents = new Dictionary<string, object>();
             values = new Dictionary<string, object>();
@@ -26,6 +46,15 @@ namespace SS {
             Changed = false;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Spreadsheet"/> class, populating cells from 
+        /// the provided file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="isValid">The is valid.</param>
+        /// <param name="normalize">The normalize.</param>
+        /// <param name="version">The version.</param>
+        /// <exception cref="SpreadsheetReadWriteException">Error creating spreadsheet from the provided file " + file + "\nResult: " + e.Message</exception>
         public Spreadsheet(string file, Func<string, bool> isValid, Func<string, string> normalize, string version) : base(isValid, normalize, version) {
             contents = new Dictionary<string, object>();
             values = new Dictionary<string, object>();
