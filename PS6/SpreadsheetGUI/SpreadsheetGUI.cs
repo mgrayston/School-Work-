@@ -104,10 +104,25 @@ namespace SpreadsheetGUI {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void openButton_Click(object sender, EventArgs e) {
+            if (ss.Changed) {
+                DialogResult dr = promptSave();
+                switch (dr) {
+                    case DialogResult.Yes:
+                        saveButton_Click(sender, e);
+                        break;
+
+                    case DialogResult.No:
+                        break;
+
+                    case DialogResult.Cancel:
+                        return;
+                }
+            }
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Title = "Open File";
             ofd.Filter = "Spreadsheet (*.sprd)|*.sprd|All Files (*.*)|*.*"; // displays only .sprd by default, else all files
             if (ofd.ShowDialog() == DialogResult.OK) {
+
                 // TODO check for unsaved work before saving and prompt
                 ss = new Spreadsheet(ofd.FileName, s => Regex.IsMatch(s, validVariable), s => s.ToUpper(), "ps6");
                 panel.Clear();
@@ -146,6 +161,12 @@ namespace SpreadsheetGUI {
             newWindow.Text = "Spreadsheet " + count; // change spreadsheet title
         }
 
+        // TODO issue where if a .sprd is opened, and then you try to close, it always prompts
+        // whether to save or not, even though nothing has changed.
+        private DialogResult promptSave() {
+            return MessageBox.Show("Unsaved Changes", "Unsaved changes detected. Would you like to save?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+        }
+
         /// <summary>
         /// Handles the DoWork event of the backgroundWorker1 control.
         /// </summary>
@@ -174,6 +195,25 @@ namespace SpreadsheetGUI {
             }
             catch (Exception exc) {
                 MessageBox.Show("Error occured!\n" + exc.Message, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SpreadsheetGUI_FormClosing(object sender, FormClosingEventArgs e) {
+            if (ss.Changed) {
+                DialogResult dr = promptSave();
+                switch (dr) {
+                    case DialogResult.Yes:
+                        saveButton_Click(sender, e);
+                        break;
+
+                    case DialogResult.No:
+                        e.Cancel = false;
+                        break;
+
+                    case DialogResult.Cancel:
+                        e.Cancel = true;
+                        break;
+                }
             }
         }
     }
