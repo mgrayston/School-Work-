@@ -30,7 +30,6 @@ namespace SS {
             contents = new Dictionary<string, object>();
             values = new Dictionary<string, object>();
             cellGraph = new DependencyGraph();
-            Changed = false;
 
             try {
                 using (XmlReader reader = XmlReader.Create(file)) {
@@ -48,6 +47,8 @@ namespace SS {
             catch (Exception e) {
                 throw new SpreadsheetReadWriteException("Error creating spreadsheet from the provided file " + file + "\nResult: " + e.Message);
             }
+
+            Changed = false;
         }
 
         /// <summary>
