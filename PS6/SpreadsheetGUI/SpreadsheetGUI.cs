@@ -123,15 +123,20 @@ namespace SpreadsheetGUI {
             ofd.Filter = "Spreadsheet (*.sprd)|*.sprd|All Files (*.*)|*.*"; // displays only .sprd by default, else all files
             if (ofd.ShowDialog() == DialogResult.OK) {
 
-                // TODO check for unsaved work before saving and prompt
+                // check for unsaved work before saving and prompt
                 ss = new Spreadsheet(ofd.FileName, s => Regex.IsMatch(s, validVariable), s => s.ToUpper(), "ps6");
                 panel.Clear();
                 updateCells(new HashSet<string>(ss.GetNamesOfAllNonemptyCells()));
+
+                //change window name to name of file
+                string name = ofd.FileName;
+                this.Text = string.Format("{0} - MyEditor", System.IO.Path.GetFileName(name));
+
                 int col, row;
                 panel.GetSelection(out col, out row);
                 refreshCell(getCellName(col, row));
+                ss.Save(ofd.FileName); //resets "Changed" property to false
 
-                //TODO - Check for invalid file type?
             }
         }
 
@@ -145,8 +150,13 @@ namespace SpreadsheetGUI {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Title = "Save File";
             sfd.Filter = "Spreadsheet (*.sprd)|*.sprd|All Files (*.*)|*.* |Text File (*.txt)|*.txt";
+            sfd.FileName = this.Text;
             if (sfd.ShowDialog() == DialogResult.OK) {
+     
                 ss.Save(sfd.FileName);
+                //change window name to name of file
+                string name = sfd.FileName;
+                this.Text = string.Format("{0} - MyEditor", System.IO.Path.GetFileName(name));
             }
         }
 
@@ -161,10 +171,18 @@ namespace SpreadsheetGUI {
             newWindow.Text = "Spreadsheet " + count; // change spreadsheet title
         }
 
-        // TODO issue where if a .sprd is opened, and then you try to close, it always prompts
-        // whether to save or not, even though nothing has changed.
         private DialogResult promptSave() {
-            return MessageBox.Show("Unsaved Changes", "Unsaved changes detected. Would you like to save?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            return MessageBox.Show("Unsaved changes detected. Would you like to save?","Unsaved Changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+        }
+
+        /// <summary>
+        /// Message box displays README.txt file to explain functionality to User.
+        /// </summary>
+        /// <returns></returns>
+        private DialogResult showReadMe()
+        {
+
+            return MessageBox.Show(File.ReadAllText(@"..\..\..\Resources\README.txt"), "README", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         /// <summary>
@@ -215,6 +233,11 @@ namespace SpreadsheetGUI {
                         break;
                 }
             }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            showReadMe();
         }
     }
 }
