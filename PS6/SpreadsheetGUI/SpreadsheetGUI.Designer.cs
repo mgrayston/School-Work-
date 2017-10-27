@@ -41,6 +41,7 @@
             this.EnterButton = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.printToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,6 +74,7 @@
             this.newButton,
             this.saveButton,
             this.openButton,
+            this.printToolStripMenuItem,
             this.closeButton});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -81,28 +83,28 @@
             // newButton
             // 
             this.newButton.Name = "newButton";
-            this.newButton.Size = new System.Drawing.Size(103, 22);
+            this.newButton.Size = new System.Drawing.Size(152, 22);
             this.newButton.Text = "New";
             this.newButton.Click += new System.EventHandler(this.newButton_Click);
             // 
             // saveButton
             // 
             this.saveButton.Name = "saveButton";
-            this.saveButton.Size = new System.Drawing.Size(103, 22);
+            this.saveButton.Size = new System.Drawing.Size(152, 22);
             this.saveButton.Text = "Save";
             this.saveButton.Click += new System.EventHandler(this.saveButton_Click);
             // 
             // openButton
             // 
             this.openButton.Name = "openButton";
-            this.openButton.Size = new System.Drawing.Size(103, 22);
+            this.openButton.Size = new System.Drawing.Size(152, 22);
             this.openButton.Text = "Open";
             this.openButton.Click += new System.EventHandler(this.openButton_Click);
             // 
             // closeButton
             // 
             this.closeButton.Name = "closeButton";
-            this.closeButton.Size = new System.Drawing.Size(103, 22);
+            this.closeButton.Size = new System.Drawing.Size(152, 22);
             this.closeButton.Text = "Close";
             this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
             // 
@@ -181,7 +183,7 @@
             // EnterButton
             // 
             this.EnterButton.Location = new System.Drawing.Point(704, 2);
-            this.EnterButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.EnterButton.Margin = new System.Windows.Forms.Padding(2);
             this.EnterButton.Name = "EnterButton";
             this.EnterButton.Size = new System.Drawing.Size(42, 20);
             this.EnterButton.TabIndex = 4;
@@ -196,6 +198,13 @@
             // backgroundWorker2
             // 
             this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            // 
+            // printToolStripMenuItem
+            // 
+            this.printToolStripMenuItem.Name = "printToolStripMenuItem";
+            this.printToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.printToolStripMenuItem.Text = "Print";
+            this.printToolStripMenuItem.Click += new System.EventHandler(this.printToolStripMenuItem_Click);
             // 
             // SpreadsheetGUI
             // 
@@ -244,6 +253,7 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.ComponentModel.BackgroundWorker backgroundWorker2;
+        private System.Windows.Forms.ToolStripMenuItem printToolStripMenuItem;
     }
 }
 

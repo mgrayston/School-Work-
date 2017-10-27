@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading;
 using SpreadsheetUtilities;
 using System.Text.RegularExpressions;
+using System.Drawing.Printing;
 
 namespace SpreadsheetGUI {
     public partial class SpreadsheetGUI : Form {
@@ -19,6 +20,9 @@ namespace SpreadsheetGUI {
         private Spreadsheet ss; // Backing Spreadsheet for this GUI
         private string validVariable = "^[A-Z]{1}[1-99]$";
 
+        /// <summary>
+        /// Opens a new spreadsheet GUI object
+        /// </summary>
         public SpreadsheetGUI() {
             ss = new Spreadsheet(s => Regex.IsMatch(s, validVariable), s => s.ToUpper(), "ps6");
             InitializeComponent();
@@ -238,6 +242,45 @@ namespace SpreadsheetGUI {
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             showReadMe();
+        }
+
+        private void printToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PrintDocument pd = new PrintDocument();
+            pd.PrintPage += new PrintPageEventHandler(PrintImage);
+            PrintDialog pdi = new PrintDialog();
+            pdi.Document = pd; 
+            if (pdi.ShowDialog() == DialogResult.OK)
+            {
+                pd.Print();
+                this.Focus();
+            }
+            else
+            {
+                MessageBox.Show("Print Cancelled");
+            }
+        }
+
+        void PrintImage(object o, PrintPageEventArgs e)
+        {
+            this.Focus();
+            int x = SystemInformation.WorkingArea.X; //this.left
+            int y = SystemInformation.WorkingArea.Y; //this.Top
+            int width = this.Width;
+            int height = this.Height;
+
+            Rectangle bounds = new Rectangle(x, y, width, height);
+            Bitmap img = new Bitmap(width, height);
+            this.DrawToBitmap(img, bounds);
+
+            Rectangle printSize = e.MarginBounds;
+            if((double)img.Width / (double)img.Height > 1) //img wider
+                printSize.Height = (int)((double)img.Height / (double)img.Width * (double)printSize.Width);
+            else
+                printSize.Width = (int)((double)img.Width / (double)img.Height * (double)printSize.Height);
+
+            e.Graphics.DrawImage(img, printSize);
+            this.Focus();
         }
     }
 }

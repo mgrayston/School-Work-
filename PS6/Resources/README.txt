@@ -22,6 +22,7 @@ Additional Features:
 	2. Window displays the name of the file.
 	3. Suggests a file name when saving.
 	4. Help Menu shows contents of README.
+	5. Print option displays current GUI display and fits to page margins.
 
 Note to Grader:
-
+	Hi Grader!
