@@ -218,7 +218,6 @@ namespace SpreadsheetGUI {
         /// </summary>
         /// <returns></returns>
         private DialogResult showReadMe() {
-
             return MessageBox.Show(File.ReadAllText(@"..\..\..\Resources\README.txt"), "README", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
