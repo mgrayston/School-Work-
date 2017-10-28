@@ -4,6 +4,45 @@
         <name>Spreadsheet</name>
     </assembly>
     <members>
+        <member name="T:SS.Spreadsheet">
+            <summary>
+            Representation of a Spreadsheet object. Capable of saving and opening from files, 
+            and distinguishing between Formulas, strings, and doubles. Stores both values and 
+            contents of all cells.
+            </summary>
+            <seealso cref="T:SS.AbstractSpreadsheet" />
+        </member>
+        <member name="P:SS.Spreadsheet.Changed">
+            <summary>
+            True if this spreadsheet has been modified since it was created or saved
+            (whichever happened most recently); false otherwise.
+            </summary>
+        </member>
+        <member name="M:SS.Spreadsheet.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SS.Spreadsheet"/> class.
+            </summary>
+        </member>
+        <member name="M:SS.Spreadsheet.#ctor(System.Func{System.String,System.Boolean},System.Func{System.String,System.String},System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SS.Spreadsheet"/> class, using the provided 
+            isValid and normalize Funcs, and provided version.
+            </summary>
+            <param name="isValid"></param>
+            <param name="normalize"></param>
+            <param name="version"></param>
+        </member>
+        <member name="M:SS.Spreadsheet.#ctor(System.String,System.Func{System.String,System.Boolean},System.Func{System.String,System.String},System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SS.Spreadsheet"/> class, populating cells from 
+            the provided file.
+            </summary>
+            <param name="file">The file.</param>
+            <param name="isValid">The is valid.</param>
+            <param name="normalize">The normalize.</param>
+            <param name="version">The version.</param>
+            <exception cref="T:SS.SpreadsheetReadWriteException">Error creating spreadsheet from the provided file " + file + "\nResult: " + e.Message</exception>
+        </member>
         <member name="M:SS.Spreadsheet.GetNamesOfAllNonemptyCells">
             <summary>
             Enumerates the names of all the non-empty cells in the spreadsheet.

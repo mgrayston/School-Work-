@@ -1,5 +1,8 @@
-﻿Written by:
-	Chris Nelson
+﻿Version: 1.0
+Last Updated: 27 October, 2017
+
+Written by:
+	Christopher Nielson
 	Matt Grayston
 
 University of Utah

@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using SS;
 using System.IO;
-using System.Threading;
 using SpreadsheetUtilities;
 using System.Text.RegularExpressions;
 using System.Drawing.Printing;
 
+// Version 1.0
+// 27 October 2017
+// Authors:
+//     Christopher Nielson
+//     Matt Grayston
 namespace SpreadsheetGUI {
+    /// <summary>
+    /// GUI for Spreadsheet software.
+    /// </summary>
+    /// <seealso cref="System.Windows.Forms.Form" />
     public partial class SpreadsheetGUI : Form {
 
         private Spreadsheet ss; // Backing Spreadsheet for this GUI
@@ -30,6 +34,11 @@ namespace SpreadsheetGUI {
             contentsBox.Focus();    // TODO not working..?
         }
 
+        /// <summary>
+        /// Handles the Click event of the EnterButton control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void EnterButton_Click(object sender, EventArgs e) {
             int col, row;
             panel.GetSelection(out col, out row);
@@ -41,6 +50,10 @@ namespace SpreadsheetGUI {
             }
         }
 
+        /// <summary>
+        /// Panels the selection changed.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
         private void panel_SelectionChanged(SpreadsheetPanel sender) {
             contentsBox.Focus();
             int col, row;
@@ -48,6 +61,10 @@ namespace SpreadsheetGUI {
             refreshCell(getCellName(col, row));
         }
 
+        /// <summary>
+        /// Refreshes the cell.
+        /// </summary>
+        /// <param name="cell">The cell.</param>
         private void refreshCell(string cell) {
             if (InvokeRequired) {
                 this.Invoke(new Action<string>(refreshCell), new object[] { cell });
@@ -72,14 +89,29 @@ namespace SpreadsheetGUI {
             }
         }
 
+        /// <summary>
+        /// Gets the name of the cell.
+        /// </summary>
+        /// <param name="col">The col.</param>
+        /// <param name="row">The row.</param>
+        /// <returns></returns>
         private string getCellName(int col, int row) {
             return (char)(col + 65) + "" + (row + 1);
         }
 
+        /// <summary>
+        /// Gets the cell coord.
+        /// </summary>
+        /// <param name="cell">The cell.</param>
+        /// <returns></returns>
         private int getCellCoord(string cell) {
             return ((char)cell[0]) - 65;
         }
 
+        /// <summary>
+        /// Updates the cells.
+        /// </summary>
+        /// <param name="cells">The cells.</param>
         private void updateCells(ISet<string> cells) {
             foreach (string cell in cells) {
                 object cellValue = ss.GetCellValue(cell);
@@ -139,8 +171,6 @@ namespace SpreadsheetGUI {
                 int col, row;
                 panel.GetSelection(out col, out row);
                 refreshCell(getCellName(col, row));
-                ss.Save(ofd.FileName); //resets "Changed" property to false
-
             }
         }
 
@@ -156,7 +186,7 @@ namespace SpreadsheetGUI {
             sfd.Filter = "Spreadsheet (*.sprd)|*.sprd|All Files (*.*)|*.* |Text File (*.txt)|*.txt";
             sfd.FileName = this.Text;
             if (sfd.ShowDialog() == DialogResult.OK) {
-     
+
                 ss.Save(sfd.FileName);
                 //change window name to name of file
                 string name = sfd.FileName;
@@ -175,16 +205,19 @@ namespace SpreadsheetGUI {
             newWindow.Text = "Spreadsheet " + count; // change spreadsheet title
         }
 
+        /// <summary>
+        /// Prompts the save.
+        /// </summary>
+        /// <returns></returns>
         private DialogResult promptSave() {
-            return MessageBox.Show("Unsaved changes detected. Would you like to save?","Unsaved Changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            return MessageBox.Show("Unsaved changes detected. Would you like to save?", "Unsaved Changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
         }
 
         /// <summary>
         /// Message box displays README.txt file to explain functionality to User.
         /// </summary>
         /// <returns></returns>
-        private DialogResult showReadMe()
-        {
+        private DialogResult showReadMe() {
 
             return MessageBox.Show(File.ReadAllText(@"..\..\..\Resources\README.txt"), "README", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -220,6 +253,11 @@ namespace SpreadsheetGUI {
             }
         }
 
+        /// <summary>
+        /// Handles the FormClosing event of the SpreadsheetGUI control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FormClosingEventArgs"/> instance containing the event data.</param>
         private void SpreadsheetGUI_FormClosing(object sender, FormClosingEventArgs e) {
             if (ss.Changed) {
                 DialogResult dr = promptSave();
@@ -239,30 +277,40 @@ namespace SpreadsheetGUI {
             }
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        /// <summary>
+        /// Handles the Click event of the aboutToolStripMenuItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e) {
             showReadMe();
         }
 
-        private void printToolStripMenuItem_Click(object sender, EventArgs e)
-        {
+        /// <summary>
+        /// Handles the Click event of the printToolStripMenuItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void printToolStripMenuItem_Click(object sender, EventArgs e) {
             PrintDocument pd = new PrintDocument();
             pd.PrintPage += new PrintPageEventHandler(PrintImage);
             PrintDialog pdi = new PrintDialog();
-            pdi.Document = pd; 
-            if (pdi.ShowDialog() == DialogResult.OK)
-            {
+            pdi.Document = pd;
+            if (pdi.ShowDialog() == DialogResult.OK) {
                 pd.Print();
                 this.Focus();
             }
-            else
-            {
+            else {
                 MessageBox.Show("Print Cancelled");
             }
         }
 
-        void PrintImage(object o, PrintPageEventArgs e)
-        {
+        /// <summary>
+        /// Prints the image.
+        /// </summary>
+        /// <param name="o">The o.</param>
+        /// <param name="e">The <see cref="PrintPageEventArgs"/> instance containing the event data.</param>
+        void PrintImage(object o, PrintPageEventArgs e) {
             this.Focus();
             int x = SystemInformation.WorkingArea.X; //this.left
             int y = SystemInformation.WorkingArea.Y; //this.Top
@@ -274,7 +322,7 @@ namespace SpreadsheetGUI {
             this.DrawToBitmap(img, bounds);
 
             Rectangle printSize = e.MarginBounds;
-            if((double)img.Width / (double)img.Height > 1) //img wider
+            if ((double)img.Width / (double)img.Height > 1) //img wider
                 printSize.Height = (int)((double)img.Height / (double)img.Width * (double)printSize.Width);
             else
                 printSize.Width = (int)((double)img.Width / (double)img.Height * (double)printSize.Height);
