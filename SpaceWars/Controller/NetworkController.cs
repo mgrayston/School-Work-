@@ -4,26 +4,32 @@ using System.Net.Sockets;
 using System.Text;
 
 namespace NetworkController {
+
+    public delegate void NetworkAction(SocketState state);
+
     public class SocketState {
         private Socket socket;
         private int ID;
         private byte[] buffer;
         private StringBuilder builder;
-        private Delegate callMe;
+        private NetworkAction callMe;
 
-        public SocketState(Socket s, int id, Delegate d) {
-            Socket = s;
+        public SocketState(Socket s, int id, NetworkAction d) {
+            socket = s;
             ID = id;
             callMe = d;
+            buffer = new byte[1024];
+            builder = new StringBuilder();
         }
 
         public Socket Socket { get => socket; }
         public StringBuilder Builder { get => builder; }
         public byte[] Buffer { get => buffer; set => buffer = value; }
+        public NetworkAction CallMe { get => callMe; }
     }
 
-    public static class Network {
-        Socket ConnectToServer(Delegate callMe, string hostName) {
+    public class Network { //changed from static class
+        Socket ConnectToServer(NetworkAction callMe, string hostName) {
             Socket socket;
             IPAddress ipAddress;
             MakeSocket(hostName, out socket, out ipAddress);
@@ -31,17 +37,40 @@ namespace NetworkController {
             SocketState state = new SocketState(socket, -1, callMe);
 
             socket.BeginConnect(ipAddress, DEFAULT_PORT, ConnectedCallback, state);
-
+           
             return socket;
         }
 
         void ConnectedCallback(IAsyncResult stateObject) {
             SocketState state = (SocketState)stateObject;
+            
+            try
+            {
+                // Complete the connection.
+                state.Socket.EndConnect(stateObject);
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Unable to connect to server. Error occured: " + e);
+                return;
+            }
+
+            // Don't start an event loop to receive data from the server. The client might not want to do that.
+            //state.theSocket.BeginReceive(state.messageBuffer, 0, state.messageBuffer.Length, SocketFlags.None, ReceiveCallback, state);
+
+            // Instead, just invoke the client's delegate so it can take whatever action it desires.
+            state.CallMe(state);
 
         }
 
+        /// <summary>
+        /// GetData is  a wrapper for BeginReceive.
+        /// This is the public entry point for asking for data.
+        /// Necessary so that we can separate networking concerns from client concerns.
+        /// </summary>
+        /// <param name="state"></param>
         void GetData(SocketState state) {
-
+            state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
         }
 
         private void ReceiveCallback(IAsyncResult stateObject) {
@@ -56,12 +85,16 @@ namespace NetworkController {
                 // It may be an incomplete message, so we need to start building it up piece by piece
                 state.Builder.Append(theMessage);
 
-                ProcessMessage(state);
+                //ProcessMessage(state); // this should be moved to the client.  Not networking code
+
+                // TODO - Instead, just invoke the client's delegate, so it can take whatever action it desires.
+                state.CallMe(state);
+    
             }
 
             // Continue the "event loop" that was started on line 96.
             // Start listening for more parts of a message, or more new messages
-            state.Socket.BeginReceive(state.messageBuffer, 0, state.messageBuffer.Length, SocketFlags.None, ReceiveCallback, state);
+            state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
 
         }
 
