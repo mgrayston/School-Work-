@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Sockets;
 using System.Windows.Forms;
+using NetworkController;
 
 namespace View {
-    public partial class Form1 : Form {
-        public Form1() {
+    public partial class spaceWarsForm : Form {
+        public spaceWarsForm() {
             InitializeComponent();
         }
 
@@ -19,18 +14,29 @@ namespace View {
             // TODO: This needs better error handling. Left as an exercise.
             // If the server box is empty, it gives a message, but doesn't allow us to try to reconnect.
             // It also doesn't handle unreachable addresses.
-            if (serverAddress.Text == "") {
+            if (serverText.Text == "") {
                 MessageBox.Show("Please enter a server address");
                 return;
             }
 
-
             // Disable the controls and try to connect
             connectButton.Enabled = false;
-            serverAddress.Enabled = false;
+            serverText.Enabled = false;
 
+            Socket server = Network.ConnectToServer(HandleFirstContact, serverText.Text);
+        }
+        void HandleFirstContact(SocketState state) {
+            state.CallMe = ReceiveStartup;
+        }
 
-            ConnectToServer(serverAddress.Text);
+        void ReceiveStartup(SocketState state) {
+            // TODO get data from state
+            state.CallMe = ReceiveWorld;
+            Network.GetData(state);
+        }
+
+        void ReceiveWorld(SocketState state) {
+            // TODO
         }
     }
 }

@@ -25,24 +25,26 @@ namespace NetworkController {
         public Socket Socket { get => socket; }
         public StringBuilder Builder { get => builder; }
         public byte[] Buffer { get => buffer; set => buffer = value; }
-        public NetworkAction CallMe { get => callMe; }
+        public NetworkAction CallMe { get => CallMe; set => CallMe = value; }
     }
 
-    public class Network { //changed from static class
-        Socket ConnectToServer(NetworkAction callMe, string hostName) {
+    public static class Network {
+        public static Socket ConnectToServer(NetworkAction callMe, string hostName) {
             Socket socket;
             IPAddress ipAddress;
             MakeSocket(hostName, out socket, out ipAddress);
 
             SocketState state = new SocketState(socket, -1, callMe);
 
-            socket.BeginConnect(ipAddress, DEFAULT_PORT, ConnectedCallback, state);
+            state.CallMe = callMe;
+
+            state.Socket.BeginConnect(ipAddress, DEFAULT_PORT, ConnectedCallback, state);
            
             return socket;
         }
 
-        void ConnectedCallback(IAsyncResult stateObject) {
-            SocketState state = (SocketState)stateObject;
+        private static void ConnectedCallback(IAsyncResult stateObject) {
+            SocketState state = (SocketState)stateObject.AsyncState;
             
             try
             {
@@ -60,7 +62,6 @@ namespace NetworkController {
 
             // Instead, just invoke the client's delegate so it can take whatever action it desires.
             state.CallMe(state);
-
         }
 
         /// <summary>
@@ -69,12 +70,13 @@ namespace NetworkController {
         /// Necessary so that we can separate networking concerns from client concerns.
         /// </summary>
         /// <param name="state"></param>
-        void GetData(SocketState state) {
+        public static void GetData(SocketState state) {
             state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
         }
 
-        private void ReceiveCallback(IAsyncResult stateObject) {
+        private static void ReceiveCallback(IAsyncResult stateObject) {
             SocketState state = (SocketState)stateObject.AsyncState;
+            state.Socket.EndReceive(stateObject);
 
             int bytesRead = state.Socket.EndReceive(stateObject);
 
@@ -89,13 +91,11 @@ namespace NetworkController {
 
                 // TODO - Instead, just invoke the client's delegate, so it can take whatever action it desires.
                 state.CallMe(state);
-    
             }
 
             // Continue the "event loop" that was started on line 96.
             // Start listening for more parts of a message, or more new messages
-            state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
-
+            //state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
         }
 
         public const int DEFAULT_PORT = 11000;
