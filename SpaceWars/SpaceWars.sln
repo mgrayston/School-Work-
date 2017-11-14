@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resources", "Resources\Resources.csproj", "{BEBC810D-5D2A-45DD-B6B4-A8E995C8C122}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "View", "View\View.csproj", "{4F1584A3-9BF0-4B8E-81B4-E28FDDFD0C3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vector2D", "Vector2D\Vector2D.csproj", "{EBEE51D3-9ECE-43A6-909A-A80FCC139734}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{6291BF83-225C-4B44-AB6A-81F91337FCB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{EBEE51D3-9ECE-43A6-909A-A80FCC139734}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBEE51D3-9ECE-43A6-909A-A80FCC139734}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBEE51D3-9ECE-43A6-909A-A80FCC139734}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6291BF83-225C-4B44-AB6A-81F91337FCB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6291BF83-225C-4B44-AB6A-81F91337FCB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6291BF83-225C-4B44-AB6A-81F91337FCB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6291BF83-225C-4B44-AB6A-81F91337FCB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
