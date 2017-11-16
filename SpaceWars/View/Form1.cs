@@ -26,18 +26,20 @@ namespace View {
 
             Socket server = Network.ConnectToServer(HandleFirstContact, serverText.Text);
         }
-        void HandleFirstContact(SocketState state) {
+        private void HandleFirstContact(SocketState state) {
             state.CallMe = ReceiveStartup;
+            // TODO create send methods in Network Controller, and send username here. 
+            //Network.sen
         }
 
-        void ReceiveStartup(SocketState state) {
+        private void ReceiveStartup(SocketState state) {
             // TODO get data from state
             state.CallMe = ReceiveWorld;
             Network.GetData(state);
         }
 
 
-        void ReceiveWorld(SocketState state) {
+        private void ReceiveWorld(SocketState state) {
             // TODO
         }
 
