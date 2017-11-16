@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using NetworkController;
+using Controller;
+using Model;
 
 namespace View {
     public partial class spaceWarsForm : Form {
+        private World world;
 
         public spaceWarsForm() {
             InitializeComponent();
+            this.AcceptButton = connectButton;
         }
 
-        // TODO change this to apply to our GUI
         private void connectButton_Click(object sender, EventArgs e) {
             // TODO: This needs better error handling. Left as an exercise.
             // If the server box is empty, it gives a message, but doesn't allow us to try to reconnect.
@@ -23,24 +26,36 @@ namespace View {
             // Disable the controls and try to connect
             connectButton.Enabled = false;
             serverText.Enabled = false;
+            nameText.Enabled = false;
+
+            // REMOVE
+            System.Diagnostics.Debug.WriteLine("Connect button clicked");
 
             Socket server = Network.ConnectToServer(HandleFirstContact, serverText.Text);
         }
+
         private void HandleFirstContact(SocketState state) {
             state.CallMe = ReceiveStartup;
-            // TODO create send methods in Network Controller, and send username here. 
-            //Network.sen
+            Network.Send(state.Socket, nameText.Text + "\n");
+            Network.GetData(state);
         }
 
         private void ReceiveStartup(SocketState state) {
-            // TODO get data from state
+            String[] response = Regex.Split(state.Builder.ToString(), @"(?<=[\n])");
+            world = new World(int.Parse(response[0]), int.Parse(response[1]));
+
+            // REMOVE
+            System.Diagnostics.Debug.WriteLine("Received connection info!\nID: " + world.Id + "\nWorld Size: " + world.WorldSize);
+
+            state.Builder.Clear();
             state.CallMe = ReceiveWorld;
             Network.GetData(state);
         }
 
 
         private void ReceiveWorld(SocketState state) {
-            // TODO
+            Processor.ProcessData(world, state);
+            Network.GetData(state);
         }
 
         /// <summary>

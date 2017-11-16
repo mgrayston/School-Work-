@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace NetworkController {
+namespace Controller {
 
     public delegate void NetworkAction(SocketState state);
 
@@ -25,7 +25,7 @@ namespace NetworkController {
         public Socket Socket { get => socket; }
         public StringBuilder Builder { get => builder; }
         public byte[] Buffer { get => buffer; set => buffer = value; }
-        public NetworkAction CallMe { get => CallMe; set => CallMe = value; }
+        public NetworkAction CallMe { get => callMe; set => callMe = value; }
     }
 
     public static class Network {
@@ -39,20 +39,18 @@ namespace NetworkController {
             state.CallMe = callMe;
 
             state.Socket.BeginConnect(ipAddress, DEFAULT_PORT, ConnectedCallback, state);
-           
+
             return socket;
         }
 
         private static void ConnectedCallback(IAsyncResult stateObject) {
             SocketState state = (SocketState)stateObject.AsyncState;
-            
-            try
-            {
+
+            try {
                 // Complete the connection.
                 state.Socket.EndConnect(stateObject);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine("Unable to connect to server. Error occured: " + e);
                 return;
             }
@@ -74,11 +72,10 @@ namespace NetworkController {
             state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
         }
 
-        private static void ReceiveCallback(IAsyncResult stateObject) {
-            SocketState state = (SocketState)stateObject.AsyncState;
-            state.Socket.EndReceive(stateObject);
+        private static void ReceiveCallback(IAsyncResult ar) {
+            SocketState state = (SocketState)ar.AsyncState;
 
-            int bytesRead = state.Socket.EndReceive(stateObject);
+            int bytesRead = state.Socket.EndReceive(ar);
 
             // If the socket is still open
             if (bytesRead > 0) {
@@ -86,16 +83,26 @@ namespace NetworkController {
                 // Append the received data to the growable buffer.
                 // It may be an incomplete message, so we need to start building it up piece by piece
                 state.Builder.Append(theMessage);
-
-                //ProcessMessage(state); // this should be moved to the client.  Not networking code
-
-                // TODO - Instead, just invoke the client's delegate, so it can take whatever action it desires.
                 state.CallMe(state);
             }
 
+            // REMOVE ?
             // Continue the "event loop" that was started on line 96.
             // Start listening for more parts of a message, or more new messages
             //state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
+        }
+
+        public static void Send(Socket socket, String data) {
+            Byte[] toSend = Encoding.UTF8.GetBytes(data);
+            socket.BeginSend(toSend, 0, toSend.Length, SocketFlags.None, SendCallback, socket);
+        }
+
+        private static void SendCallback(IAsyncResult ar) {
+            Socket socket = (Socket)ar.AsyncState;
+            socket.EndSend(ar);
+
+            // REMOVE
+            System.Diagnostics.Debug.WriteLine("Sent data!");
         }
 
         public const int DEFAULT_PORT = 11000;
