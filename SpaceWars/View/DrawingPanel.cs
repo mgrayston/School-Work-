@@ -57,20 +57,68 @@ namespace View
             e.Graphics.ResetTransform();
         }
 
-        //todo - copied from canvas
         private void ShipDrawer(object o, PaintEventArgs e)
         {
             int shipWidth = 35;
             Ship s = o as Ship;
-            //if (s.ID == ...)
-            //    color = ...;
-            //else if (...)
-            //    color = ...;
-            //TODO - need 7 more colors
+
+            // first eight ships are different colors. After eight they are the same.
+            //TODO - Could add a radomizing of color after the eighth ship?
+            //TODO - need to add ship spirtes.
+            using (System.Drawing.SolidBrush magentaBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Magenta))
+            using (System.Drawing.SolidBrush grayBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray))
+            using (System.Drawing.SolidBrush yellowBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Yellow))
+            using (System.Drawing.SolidBrush orangeBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Orange))
+            using (System.Drawing.SolidBrush whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
+            using (System.Drawing.SolidBrush purpleBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Purple))
+            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
+            using (System.Drawing.SolidBrush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
             using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green))
             {
                 Rectangle r = new Rectangle(-(shipWidth / 2), -(shipWidth / 2), shipWidth, shipWidth);
-                e.Graphics.FillRectangle(greenBrush, r);
+                if (s.ID == 1)
+                    e.Graphics.FillRectangle(greenBrush, r);
+                else if (s.ID == 2)
+                    e.Graphics.FillRectangle(blueBrush, r);
+                else if (s.ID == 3)
+                    e.Graphics.FillRectangle(redBrush, r);
+                else if (s.ID == 4)
+                    e.Graphics.FillRectangle(purpleBrush, r);
+                else if (s.ID == 5)
+                    e.Graphics.FillRectangle(whiteBrush, r);
+                else if (s.ID == 6)
+                    e.Graphics.FillRectangle(orangeBrush, r);
+                else if (s.ID == 7)
+                    e.Graphics.FillRectangle(yellowBrush, r);
+                else if (s.ID == 8)
+                    e.Graphics.FillRectangle(grayBrush, r);
+                else if (s.ID > 8)
+                    e.Graphics.FillRectangle(magentaBrush, r);
+            }
+        }
+
+        private void ProjectileDrawer(object o, PaintEventArgs e)
+        {
+            int projWidth = 2;
+            int projHeight = 6;
+            Projectile p = o as Projectile;
+
+            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
+            {
+                Rectangle r = new Rectangle(-(projWidth / 2), -(projHeight / 2), projWidth, projHeight);
+                e.Graphics.FillRectangle(redBrush, r);
+            }
+        }
+
+        private void StarDrawer(object o, PaintEventArgs e)
+        {
+            int starRadius = 50;
+            Star s = o as Star;
+
+            using (System.Drawing.SolidBrush yellowBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Yellow))
+            {
+                Rectangle r = new Rectangle(-(starRadius / 2), -(starRadius / 2), starRadius, starRadius);
+                e.Graphics.FillRectangle(yellowBrush, r);
             }
         }
 
@@ -81,6 +129,19 @@ namespace View
                 Vector2D location = s.Value.Loc;
                 Vector2D orientation = s.Value.Dir;
                 DrawObjectWithTransform(e, s, theWorld.WorldSize, location.GetX(), location.GetY(), orientation.ToAngle(), ShipDrawer);
+            }
+
+            foreach (KeyValuePair<int, Projectile> p in theWorld.Projectiles)
+            {
+                Vector2D location = p.Value.Loc;
+                Vector2D orientation = p.Value.Dir;
+                DrawObjectWithTransform(e, p, theWorld.WorldSize, location.GetX(), location.GetY(), orientation.ToAngle(),ProjectileDrawer);
+            }
+
+             foreach (KeyValuePair<int, Ship> s in theWorld.Ships)
+            {
+                Vector2D location = s.Value.Loc;
+                DrawObjectWithTransform(e, s, theWorld.WorldSize, location.GetX(), location.GetY(), 0, ShipDrawer);
             }
 
             // Do anything that Panel (from which we inherit) needs to do

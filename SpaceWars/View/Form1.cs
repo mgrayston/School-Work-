@@ -7,6 +7,7 @@ using Model;
 using System.Drawing;
 using System.Collections.Generic;
 using SpaceWars;
+using System.Timers;
 
 namespace View {
     public partial class spaceWarsForm : Form {
