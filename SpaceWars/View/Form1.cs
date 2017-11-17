@@ -17,6 +17,9 @@ namespace View {
 
         DrawingPanel drawingPanel;
 
+        //for sending purposes only
+        private SocketState theServer;
+
         //private FakeServer server;
 
         const int worldSize = 500;
@@ -36,26 +39,61 @@ namespace View {
             this.Controls.Add(drawingPanel);
 
             this.AcceptButton = connectButton;
+
+            // Start a new timer that will redraw the game every 15 milliseconds 
+            // This should correspond to about 67 frames per second.
+            System.Timers.Timer frameTimer = new System.Timers.Timer();
+            frameTimer.Interval = 15;
+            frameTimer.Elapsed += Redraw;
+            frameTimer.Start();
+        }
+
+        /// <summary>
+        /// Redraw the game.This method is invoked every time the "frameTimer"above ticks.
+        /// </summary>
+        private void Redraw(object sender, ElapsedEventArgs e)
+        {
+            // Invalidate this form and all its children (true)
+            // This will cause the form to redraw as soon as it can
+            MethodInvoker invalidator = new MethodInvoker(() => this.Invalidate(true));
+
+            //try catch for keeps this from crashing when closing the form
+            try { this.Invoke(invalidator); }
+            catch { return; }
         }
 
         private void connectButton_Click(object sender, EventArgs e) {
-            // TODO: This needs better error handling. Left as an exercise.
-            // If the server box is empty, it gives a message, but doesn't allow us to try to reconnect.
-            // It also doesn't handle unreachable addresses.
-            if (serverText.Text == "") {
+            if (serverText.Text == "")
+            {
                 MessageBox.Show("Please enter a server address");
-                return;
+                connectButton.Enabled = true;
+                serverText.Enabled = true;
+                nameText.Enabled = true;
+
             }
+            else
+            {
+                try
+                {
+                    // Disable the controls and try to connect
+                    connectButton.Enabled = false;
+                    serverText.Enabled = false;
+                    nameText.Enabled = false;
 
-            // Disable the controls and try to connect
-            connectButton.Enabled = false;
-            serverText.Enabled = false;
-            nameText.Enabled = false;
+                    // REMOVE
+                    System.Diagnostics.Debug.WriteLine("Connect button clicked");
 
-            // REMOVE
-            System.Diagnostics.Debug.WriteLine("Connect button clicked");
-
-            Socket server = Network.ConnectToServer(HandleFirstContact, serverText.Text);
+                    Socket server = Network.ConnectToServer(HandleFirstContact, serverText.Text);
+                }
+                catch
+                {
+                    MessageBox.Show("Please Enter a valid server address");
+                    connectButton.Enabled = true;
+                    serverText.Enabled = true;
+                    nameText.Enabled = true;
+                }
+            }
+            
         }
 
         private void HandleFirstContact(SocketState state) {
@@ -76,12 +114,9 @@ namespace View {
             Network.GetData(state);
         }
 
-
         private void ReceiveWorld(SocketState state) {
             Processor.ProcessData(theWorld, state);
             Network.GetData(state);
         }
-
-        
     }
 }

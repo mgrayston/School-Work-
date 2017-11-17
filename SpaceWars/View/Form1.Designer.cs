@@ -41,6 +41,7 @@
             this.serverText.Name = "serverText";
             this.serverText.Size = new System.Drawing.Size(100, 20);
             this.serverText.TabIndex = 0;
+            this.serverText.Text = "localhost";
             // 
             // serverLabel
             // 

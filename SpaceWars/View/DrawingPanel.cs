@@ -112,40 +112,17 @@ namespace View
 
         private void StarDrawer(object o, PaintEventArgs e)
         {
-            int starRadius = 50;
             Star s = o as Star;
+            int width = 10;
+            int height = 10;
 
-            using (System.Drawing.SolidBrush yellowBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Yellow))
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using (System.Drawing.Bitmap starImg = new System.Drawing.Bitmap(Image.FromFile("..\\..\\Resources\\Graphics\\star.jpg"), new Size(width, height)))
             {
-                Rectangle r = new Rectangle(-(starRadius / 2), -(starRadius / 2), starRadius, starRadius);
-                e.Graphics.FillRectangle(yellowBrush, r);
-            }
-        }
+                Point pnt = new Point(-(width / 2), -(height / 2));
 
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            foreach (KeyValuePair<int, Ship> s in theWorld.Ships)
-            {
-                Vector2D location = s.Value.Loc;
-                Vector2D orientation = s.Value.Dir;
-                DrawObjectWithTransform(e, s, theWorld.WorldSize, location.GetX(), location.GetY(), orientation.ToAngle(), ShipDrawer);
+                e.Graphics.DrawImage(starImg, pnt);     
             }
-
-            foreach (KeyValuePair<int, Projectile> p in theWorld.Projectiles)
-            {
-                Vector2D location = p.Value.Loc;
-                Vector2D orientation = p.Value.Dir;
-                DrawObjectWithTransform(e, p, theWorld.WorldSize, location.GetX(), location.GetY(), orientation.ToAngle(),ProjectileDrawer);
-            }
-
-             foreach (KeyValuePair<int, Ship> s in theWorld.Ships)
-            {
-                Vector2D location = s.Value.Loc;
-                DrawObjectWithTransform(e, s, theWorld.WorldSize, location.GetX(), location.GetY(), 0, ShipDrawer);
-            }
-
-            // Do anything that Panel (from which we inherit) needs to do
-            base.OnPaint(e);
         }
     }
 }
