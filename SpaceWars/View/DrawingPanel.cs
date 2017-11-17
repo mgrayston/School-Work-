@@ -99,14 +99,15 @@ namespace View
 
         private void ProjectileDrawer(object o, PaintEventArgs e)
         {
-            int projWidth = 2;
+            int projWidth = 6;
             int projHeight = 6;
             Projectile p = o as Projectile;
 
-            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
+            using(System.Drawing.Bitmap starImg = new System.Drawing.Bitmap(Image.FromFile("..\\..\\Resources\\Graphics\\star.jpg"), new Size(projWidth, projHeight)))
             {
-                Rectangle r = new Rectangle(-(projWidth / 2), -(projHeight / 2), projWidth, projHeight);
-                e.Graphics.FillRectangle(redBrush, r);
+                Point pnt = new Point(-(projWidth / 2), -(projHeight / 2));
+
+                e.Graphics.DrawImage(starImg, pnt);
             }
         }
 
@@ -123,6 +124,79 @@ namespace View
 
                 e.Graphics.DrawImage(starImg, pnt);     
             }
+        }
+
+        /// <summary>
+        /// Returns a color based on the ID. There are 8 unique colors.
+        /// </summary>
+        /// <param name="ID"> Unique Identification number</param>
+        /// <returns>A color based on ID</returns>
+        private Color getIDColor(int ID)
+        {
+            Color retColor;
+            int modResult = ID % 10;
+            switch (modResult)
+            {
+                case 0:
+                    retColor = Color.Blue; break;
+                case 1:
+                    retColor = Color.Brown; break;
+                case 2:
+                    retColor = Color.Green; break;
+                case 3:
+                    retColor = Color.Gray; break;
+                case 4:
+                    retColor = Color.Red; break;
+                case 5:
+                    retColor = Color.Violet; break;
+                case 6:
+                    retColor = Color.White; break;
+                case 7:
+                    retColor = Color.Yellow; break;
+                case 8:
+                    retColor = Color.Blue; break;
+                case 9:
+                    retColor = Color.Red; break;
+                default:
+                    retColor = Color.Green; break;
+            }
+            return retColor;
+        }
+
+        // This method is invoked when the DrawingPanel needs to be re-drawn
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            lock (theWorld)
+            {
+                // Draw the stars
+                foreach (KeyValuePair<int, Star> s in theWorld.Stars)
+                {
+                    //System.Diagnostics.Debug.WriteLine("drawing star at " + s.Value.Loc);
+                    Vector2D loc = s.Value.Loc;
+                    DrawObjectWithTransform(e, s.Value, theWorld.WorldSize, loc.GetX(), loc.GetY(), 0, StarDrawer);
+                }
+
+                // Draw the ships
+                foreach (KeyValuePair<int, Ship> ship in theWorld.Ships)
+                {
+                    //System.Diagnostics.Debug.WriteLine("drawing ship at " + ship.Value.Loc);
+                    Vector2D loc = ship.Value.Loc;
+                    Vector2D dir = ship.Value.Dir;
+                    DrawObjectWithTransform(e, ship.Value, theWorld.WorldSize, loc.GetX(), loc.GetY(), dir.ToAngle(), ShipDrawer);
+                }
+
+                // Draw the projectiles
+                foreach (KeyValuePair<int, Projectile> p in theWorld.Projectiles)
+                {
+                    //System.Diagnostics.Debug.WriteLine("drawing proj at " + p.Value.Loc);
+                    Vector2D loc = p.Value.Loc;
+                    Vector2D dir = p.Value.Dir;
+                    DrawObjectWithTransform(e, p.Value, theWorld.WorldSize, loc.GetX(), loc.GetY(), dir.ToAngle(), ProjectileDrawer);
+                }
+            }
+
+            // Do anything that Panel (from which we inherit) needs to do
+            base.OnPaint(e);
         }
     }
 }

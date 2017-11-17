@@ -38,14 +38,14 @@ namespace View {
             drawingPanel.BackColor = Color.Black;
             this.Controls.Add(drawingPanel);
 
-            this.AcceptButton = connectButton;
-
             // Start a new timer that will redraw the game every 15 milliseconds 
             // This should correspond to about 67 frames per second.
             System.Timers.Timer frameTimer = new System.Timers.Timer();
             frameTimer.Interval = 15;
             frameTimer.Elapsed += Redraw;
             frameTimer.Start();
+
+            this.AcceptButton = connectButton;
         }
 
         /// <summary>
