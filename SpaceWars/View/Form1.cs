@@ -4,13 +4,36 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Controller;
 using Model;
+using System.Drawing;
+using System.Collections.Generic;
+using SpaceWars;
 
 namespace View {
     public partial class spaceWarsForm : Form {
-        private World world;
+
+        // World is a simple container for Players and Powerups
+        private World theWorld;
+
+        DrawingPanel drawingPanel;
+
+        //private FakeServer server;
+
+        const int worldSize = 500;
 
         public spaceWarsForm() {
             InitializeComponent();
+            theWorld = new World(worldSize);
+
+            // Set up the windows Form.
+            // This stuff is usually handled by the drag and drop designer,
+            // but it's simple enough for this lab.
+            ClientSize = new Size(worldSize, worldSize);
+            drawingPanel = new DrawingPanel(theWorld);
+            drawingPanel.Location = new Point(0, 50);
+            drawingPanel.Size = new Size(this.ClientSize.Width, this.ClientSize.Height);
+            drawingPanel.BackColor = Color.Black;
+            this.Controls.Add(drawingPanel);
+
             this.AcceptButton = connectButton;
         }
 
@@ -42,10 +65,10 @@ namespace View {
 
         private void ReceiveStartup(SocketState state) {
             String[] response = Regex.Split(state.Builder.ToString(), @"(?<=[\n])");
-            world = new World(int.Parse(response[0]), int.Parse(response[1]));
+            theWorld = new World(int.Parse(response[0]), int.Parse(response[1]));
 
             // REMOVE
-            System.Diagnostics.Debug.WriteLine("Received connection info!\nID: " + world.Id + "\nWorld Size: " + world.WorldSize);
+            System.Diagnostics.Debug.WriteLine("Received connection info!\nID: " + theWorld.Id + "\nWorld Size: " + theWorld.WorldSize);
 
             state.Builder.Clear();
             state.CallMe = ReceiveWorld;
@@ -54,59 +77,10 @@ namespace View {
 
 
         private void ReceiveWorld(SocketState state) {
-            Processor.ProcessData(world, state);
+            Processor.ProcessData(theWorld, state);
             Network.GetData(state);
         }
 
-        /// <summary>
-        /// Helper method for DrawObjectWithTransform
-        /// </summary>
-        /// <param name="size">The world (and image) size</param>
-        /// <param name="w">The worldspace coordinate</param>
-        /// <returns></returns>
-        private static int WorldSpaceToImageSpace(int size, double w)
-        {
-            return (int)w + size / 2;
-        }
-
-        // A delegate for DrawObjectWithTransform
-        // Methods matching this delegate can draw whatever they want using e  
-        public delegate void ObjectDrawer(object o, PaintEventArgs e);
-
-        /// <summary>
-        /// This method performs a translation and rotation to drawn an object in the world.
-        /// </summary>
-        /// <param name="e">PaintEventArgs to access the graphics (for drawing)</param>
-        /// <param name="o">The object to draw</param>
-        /// <param name="worldSize">The size of one edge of the world (assuming the world is square)</param>
-        /// <param name="worldX">The X coordinate of the object in world space</param>
-        /// <param name="worldY">The Y coordinate of the object in world space</param>
-        /// <param name="angle">The orientation of the objec, measured in degrees clockwise from "up"</param>
-        /// <param name="drawer">The drawer delegate. After the transformation is applied, the delegate is invoked to draw whatever it wants</param>
-        private void DrawObjectWithTransform(PaintEventArgs e, object o, int worldSize, double worldX, double worldY, double angle, ObjectDrawer drawer)
-        {
-            // Perform the transformation
-            int x = WorldSpaceToImageSpace(worldSize, worldX);
-            int y = WorldSpaceToImageSpace(worldSize, worldY);
-            e.Graphics.TranslateTransform(x, y);
-            e.Graphics.RotateTransform((float)angle);
-            // Draw the object 
-            drawer(o, e);
-            // Then undo the transformation
-            e.Graphics.ResetTransform();
-        }
-
-        //todo - copied from canvas
-        //private void ShipDrawer(object o, PaintEventArgs e)
-        //{
-        //    int shipWidth = 35;
-        //    Ship s = o as Ship;
-        //    if (s.GetID() == ...)
-        //        color = ...;
-        //    else if (...)
-        //        color = ...;
-        //    Rectangle r = new Rectangle(-(shipWidth / 2), -(shipWidth / 2), shipWidth, shipWidth);
-        //    e.Graphics.FillRectangle(someBrush, r);
-        //}
+        
     }
 }

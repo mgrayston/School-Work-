@@ -58,13 +58,13 @@ namespace Model
             this.score = 0;
         }
 
-        public int getID{get => ship;}
-        public string getName { get => name; }
-        public Vector2D getLoc { get => loc; }
-        public Vector2D getDir { get => dir; }
-        public bool getThrust { get => thrust; }
-        public int getHP { get => hp; }
-        public int getScore { get => score; }
+        public int ID{get => ship;}
+        public string Name { get => name; }
+        public Vector2D Loc { get => loc; }
+        public Vector2D Dir { get => dir; }
+        public bool Thrust { get => thrust; }
+        public int HP { get => hp; }
+        public int Score { get => score; }
 
     }
 }

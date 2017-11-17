@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace Model
 {
-    class Projectile
+    public class Projectile
     {
         /// <summary>
         /// Unique projectile ID
         /// </summary>
         private int proj;
-
 
         /// <summary>
         /// Vector2D representing the location
@@ -44,10 +43,10 @@ namespace Model
             this.alive = false;
         }
 
-        public int getID { get => proj; }
-        public int getOwner { get => owner; }
-        public Vector2D getLoc { get => loc; }
-        public Vector2D getDir { get => dir; }
+        public int ID { get => proj; }
+        public int Owner { get => owner; }
+        public Vector2D Loc { get => loc; }
+        public Vector2D Dir { get => dir; }
         public bool Alive { get => alive; }
     }
 }

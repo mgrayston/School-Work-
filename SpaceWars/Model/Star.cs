@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Model
 {
-    class Star
+    public class Star
     {
         /// <summary>
         /// Unique ID
@@ -32,8 +32,8 @@ namespace Model
             this.mass = mass;
         }
 
-        public int getID { get => star; }
-        public Vector2D getLoc { get => loc; }
-        public double getMass { get => mass; }
+        public int ID { get => star; }
+        public Vector2D Loc { get => loc; }
+        public double Mass { get => mass; }
     }
 }

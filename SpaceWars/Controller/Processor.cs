@@ -1,6 +1,8 @@
 ﻿using System;
 using Model;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Controller {
     /// <summary>
@@ -20,6 +22,27 @@ namespace Controller {
 
                 Console.WriteLine("Received: " + part);
 
+                JObject jsonObj = JObject.Parse(part);
+                var token = jsonObj.First;
+
+                if (token.Path == "ship")
+                {
+                    Ship theShip = JsonConvert.DeserializeObject<Ship>(part);
+                    //world.Ships.Add(theShip.ID, theShip;
+                    world.Ships[theShip.ID] = theShip;
+                }
+                else if (token.Path == "proj")
+                {
+                    Projectile theProj = JsonConvert.DeserializeObject<Projectile>(part);
+                    //world.Projectiles.Add(theProj.ID, theProj);
+                    world.Projectiles[theProj.ID] = theProj;
+                }
+                else if (token.Path == "star")
+                {
+                    Star theStar = JsonConvert.DeserializeObject<Star>(part);
+                    //world.Stars.Add(theStar.ID, theStar);
+                    world.Stars[theStar.ID] = theStar;
+                }
                 state.Builder.Remove(0, part.Length);
             }
         }
