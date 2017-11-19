@@ -52,7 +52,6 @@ namespace Controller {
             }
             catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine("Unable to connect to server. Error occured: " + e);
-                return;
             }
 
             state.CallMe(state);

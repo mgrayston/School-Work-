@@ -40,41 +40,37 @@ namespace View {
             connected = false;
         }
 
+        /// <summary>
+        /// Button to allow connecting to the specified server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void connectButton_Click(object sender, EventArgs e) {
+            // Disable inputs and ConnectButton
+            ToggleInputEnabled();
+
+            // Catch empty server addresses
             if (serverText.Text == "") {
                 MessageBox.Show("Please enter a server address");
-                connectButton.Enabled = true;
-                serverText.Enabled = true;
-                nameText.Enabled = true;
-
+                // Reenable inputs and ConnectButton
+                ToggleInputEnabled();
             }
             else {
-                try {
-                    // Disable the controls and try to connect
-                    connectButton.Enabled = false;
-                    serverText.Enabled = false;
-                    nameText.Enabled = false;
-
-                    // REMOVE
-                    System.Diagnostics.Debug.WriteLine("Connect button clicked");
-
-                    Socket server = Network.ConnectToServer(HandleFirstContact, serverText.Text);
-                }
-                catch {
-                    MessageBox.Show("Please Enter a valid server address");
-                    connectButton.Enabled = true;
-                    serverText.Enabled = true;
-                    nameText.Enabled = true;
-                }
+                Network.ConnectToServer(HandleFirstContact, serverText.Text);
             }
-
         }
 
         private void HandleFirstContact(SocketState state) {
-            this.state = state;
-            state.CallMe = ReceiveStartup;
-            Network.Send(state.Socket, nameText.Text + "\n");
-            Network.GetData(state);
+            if (!state.Socket.Connected) {
+                MessageBox.Show("Please Enter a valid server address");
+                this.Invoke(new MethodInvoker(ToggleInputEnabled));
+            }
+            else {
+                this.state = state;
+                state.CallMe = ReceiveStartup;
+                Network.Send(state.Socket, nameText.Text + "\n");
+                Network.GetData(state);
+            }
         }
 
         private void ReceiveStartup(SocketState state) {
@@ -110,6 +106,19 @@ namespace View {
             Processor.ProcessData(theWorld, state);
             drawingPanel.Invalidate();
             Network.GetData(state);
+        }
+
+        private void ToggleInputEnabled() {
+            if (this.connectButton.Enabled) {
+                this.connectButton.Enabled = false;
+                this.serverText.Enabled = false;
+                this.nameText.Enabled = false;
+            }
+            else {
+                this.connectButton.Enabled = true;
+                this.serverText.Enabled = true;
+                this.nameText.Enabled = true;
+            }
         }
 
         private void timer_Tick(object sender, EventArgs e) {
