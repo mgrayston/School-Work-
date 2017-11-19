@@ -5,11 +5,59 @@ using System.Windows.Forms;
 
 namespace View {
     class DrawingPanel : Panel {
+        // World this DrawingPanel draws
         private World theWorld;
+
+        // Info for drawing Stars
         private static int starSize = 60;
         Point starPnt = new Point(-(starSize / 2), -(starSize / 2));
         Bitmap starImg = new Bitmap(Properties.Resources.star, new Size(starSize, starSize));
 
+        // Info for drawing Projectiles
+        private static int projSize = 10;
+        Point projPnt = new Point(-(projSize / 2), -(projSize / 2));
+
+        Bitmap blueProj = new Bitmap(Properties.Resources.shot_blue, new Size(projSize, projSize));
+        Bitmap brownProj = new Bitmap(Properties.Resources.shot_brown, new Size(projSize, projSize));
+        Bitmap greenProj = new Bitmap(Properties.Resources.shot_green, new Size(projSize, projSize));
+        Bitmap greyProj = new Bitmap(Properties.Resources.shot_grey, new Size(projSize, projSize));
+        Bitmap redProj = new Bitmap(Properties.Resources.shot_red, new Size(projSize, projSize));
+        Bitmap violetProj = new Bitmap(Properties.Resources.shot_violet, new Size(projSize, projSize));
+        Bitmap whiteProj = new Bitmap(Properties.Resources.shot_white, new Size(projSize, projSize));
+        Bitmap yellowProj = new Bitmap(Properties.Resources.shot_yellow, new Size(projSize, projSize));
+
+        // Info for drawing Ships
+        private static int shipSize = 25;
+        Point shipPnt = new Point(-(shipSize / 2), -(shipSize / 2));
+
+        Bitmap blueCoastImg = new Bitmap(Properties.Resources.ship_coast_blue, new Size(shipSize, shipSize));
+        Bitmap blueThrustImg = new Bitmap(Properties.Resources.ship_thrust_blue, new Size(shipSize, shipSize));
+
+        Bitmap brownCoastImg = new Bitmap(Properties.Resources.ship_coast_brown, new Size(shipSize, shipSize));
+        Bitmap brownThrustImg = new Bitmap(Properties.Resources.ship_thrust_brown, new Size(shipSize, shipSize));
+
+        Bitmap greenCoastImg = new Bitmap(Properties.Resources.ship_coast_green, new Size(shipSize, shipSize));
+        Bitmap greenThrustImg = new Bitmap(Properties.Resources.ship_thrust_green, new Size(shipSize, shipSize));
+
+        Bitmap greyCoastImg = new Bitmap(Properties.Resources.ship_coast_grey, new Size(shipSize, shipSize));
+        Bitmap greyThrustImg = new Bitmap(Properties.Resources.ship_thrust_grey, new Size(shipSize, shipSize));
+
+        Bitmap redCoastImg = new Bitmap(Properties.Resources.ship_coast_red, new Size(shipSize, shipSize));
+        Bitmap redThrustImg = new Bitmap(Properties.Resources.ship_thrust_red, new Size(shipSize, shipSize));
+
+        Bitmap violetCoastImg = new Bitmap(Properties.Resources.ship_coast_violet, new Size(shipSize, shipSize));
+        Bitmap violetThrustImg = new Bitmap(Properties.Resources.ship_thrust_violet, new Size(shipSize, shipSize));
+
+        Bitmap whiteCoastImg = new Bitmap(Properties.Resources.ship_coast_white, new Size(shipSize, shipSize));
+        Bitmap whiteThrustImg = new Bitmap(Properties.Resources.ship_thrust_white, new Size(shipSize, shipSize));
+
+        Bitmap yellowCoastImg = new Bitmap(Properties.Resources.ship_coast_yellow, new Size(shipSize, shipSize));
+        Bitmap yellowThrustImg = new Bitmap(Properties.Resources.ship_thrust_yellow, new Size(shipSize, shipSize));
+
+        /// <summary>
+        /// Constructor for DrawingPanel
+        /// </summary>
+        /// <param name="w">World that is being drawn on this DrawingPanel.</param>
         public DrawingPanel(World w) {
             this.DoubleBuffered = true;
             theWorld = w;
@@ -51,101 +99,152 @@ namespace View {
             e.Graphics.ResetTransform();
         }
 
+        /// <summary>
+        /// Draws Ships. Color is picked based on ID.
+        /// </summary>
+        /// <param name="o">Object to draw</param>
+        /// <param name="e">PaintEventArgs</param>
         private void ShipDrawer(object o, PaintEventArgs e) {
-            int shipWidth = 20;
-            Ship s = o as Ship;
+            Ship ship = o as Ship;
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            // first eight ships are different colors. After eight they are the same.
-            //TODO - Could add a radomizing of color after the eighth ship?
-            //TODO - need to add ship spirtes.
-            using (System.Drawing.SolidBrush magentaBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Magenta))
-            using (System.Drawing.SolidBrush grayBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray))
-            using (System.Drawing.SolidBrush yellowBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Yellow))
-            using (System.Drawing.SolidBrush orangeBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Orange))
-            using (System.Drawing.SolidBrush whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
-            using (System.Drawing.SolidBrush purpleBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Purple))
-            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
-            using (System.Drawing.SolidBrush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
-            using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green)) {
-                Rectangle r = new Rectangle(-(shipWidth / 2), -(shipWidth / 2), shipWidth, shipWidth);
-                if (s.id == 1)
-                    e.Graphics.FillRectangle(greenBrush, r);
-                else if (s.id == 2)
-                    e.Graphics.FillRectangle(blueBrush, r);
-                else if (s.id == 3)
-                    e.Graphics.FillRectangle(redBrush, r);
-                else if (s.id == 4)
-                    e.Graphics.FillRectangle(purpleBrush, r);
-                else if (s.id == 5)
-                    e.Graphics.FillRectangle(whiteBrush, r);
-                else if (s.id == 6)
-                    e.Graphics.FillRectangle(orangeBrush, r);
-                else if (s.id == 7)
-                    e.Graphics.FillRectangle(yellowBrush, r);
-                else if (s.id == 8)
-                    e.Graphics.FillRectangle(grayBrush, r);
-                else if (s.id > 8)
-                    e.Graphics.FillRectangle(magentaBrush, r);
+            switch (ship.id % 8) {
+                case 1:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(blueThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(blueCoastImg, shipPnt);
+                    }
+                    break;
+                case 2:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(brownThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(brownCoastImg, shipPnt);
+                    }
+                    break;
+                case 3:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(greenThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(greenCoastImg, shipPnt);
+                    }
+                    break;
+                case 4:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(greyThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(greyCoastImg, shipPnt);
+                    }
+                    break;
+                case 5:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(redThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(redCoastImg, shipPnt);
+                    }
+                    break;
+                case 6:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(violetThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(violetCoastImg, shipPnt);
+                    }
+                    break;
+                case 7:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(whiteThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(whiteCoastImg, shipPnt);
+                    }
+                    break;
+                case 0:
+                    if (ship.Thrust) {
+                        e.Graphics.DrawImage(yellowThrustImg, shipPnt);
+                    }
+                    else {
+                        e.Graphics.DrawImage(yellowCoastImg, shipPnt);
+                    }
+                    break;
             }
         }
 
+        /// <summary>
+        /// Draws Projectiles. Color is based on Projectile
+        /// owner's ID.
+        /// </summary>
+        /// <param name="o">Object to draw</param>
+        /// <param name="e">PaintEventArgs</param>
         private void ProjectileDrawer(object o, PaintEventArgs e) {
-            int projWidth = 6;
-            int projHeight = 6;
-            Projectile p = o as Projectile;
+            Projectile proj = o as Projectile;
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            using (System.Drawing.Bitmap starImg = new System.Drawing.Bitmap(Properties.Resources.star, new Size(projWidth, projHeight))) {
-                Point pnt = new Point(-(projWidth / 2), -(projHeight / 2));
-
-                e.Graphics.DrawImage(starImg, pnt);
+            switch (proj.Owner % 8) {
+                case 1:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(blueProj, projPnt);
+                    }
+                    break;
+                case 2:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(brownProj, projPnt);
+                    }
+                    break;
+                case 3:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(greenProj, projPnt);
+                    }
+                    break;
+                case 4:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(greyProj, projPnt);
+                    }
+                    break;
+                case 5:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(redProj, projPnt);
+                    }
+                    break;
+                case 6:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(violetProj, projPnt);
+                    }
+                    break;
+                case 7:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(whiteProj, projPnt);
+                    }
+                    break;
+                case 0:
+                    if (proj.Alive) {
+                        e.Graphics.DrawImage(yellowProj, projPnt);
+                    }
+                    break;
             }
         }
 
+        /// <summary>
+        /// Used to draw Stars.
+        /// </summary>
+        /// <param name="o">Object to draw</param>
+        /// <param name="e">PaintEventArgs</param>
         private void StarDrawer(object o, PaintEventArgs e) {
             Star s = o as Star;
-
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             e.Graphics.DrawImage(starImg, starPnt);
         }
 
         /// <summary>
-        /// Returns a color based on the ID. There are 8 unique colors.
+        /// This method is invoked when the DrawingPanel needs to be re-drawn 
         /// </summary>
-        /// <param name="ID"> Unique Identification number</param>
-        /// <returns>A color based on ID</returns>
-
-        // TODO change so that it returns the sprite instead maybe?
-        private Color getIDColor(int ID) {
-            Color retColor;
-            int modResult = ID % 10;
-            switch (modResult) {
-                case 0:
-                    retColor = Color.Blue; break;
-                case 1:
-                    retColor = Color.Brown; break;
-                case 2:
-                    retColor = Color.Green; break;
-                case 3:
-                    retColor = Color.Gray; break;
-                case 4:
-                    retColor = Color.Red; break;
-                case 5:
-                    retColor = Color.Violet; break;
-                case 6:
-                    retColor = Color.White; break;
-                case 7:
-                    retColor = Color.Yellow; break;
-                case 8:
-                    retColor = Color.Blue; break;
-                case 9:
-                    retColor = Color.Red; break;
-                default:
-                    retColor = Color.Green; break;
-            }
-            return retColor;
-        }
-
-        // This method is invoked when the DrawingPanel needs to be re-drawn
+        /// <param name="e">PaintEventArgs</param>
         protected override void OnPaint(PaintEventArgs e) {
             lock (theWorld) {
                 // Draw the stars

@@ -96,9 +96,6 @@ namespace Controller {
         private static void SendCallback(IAsyncResult ar) {
             Socket socket = (Socket)ar.AsyncState;
             socket.EndSend(ar);
-
-            // REMOVE
-            System.Diagnostics.Debug.WriteLine("Sent data!");
         }
 
         public const int DEFAULT_PORT = 11000;

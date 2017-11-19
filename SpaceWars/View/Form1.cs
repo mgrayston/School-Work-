@@ -95,9 +95,9 @@ namespace View {
             this.Invoke(new MethodInvoker(() => this.timer.Start()));
 
             connected = true;
-            Thread keyCapture = new Thread(keyCapturer);
-            keyCapture.SetApartmentState(ApartmentState.STA);
-            keyCapture.Start();
+            //Thread keyCapture = new Thread(keyCapturer);
+            //keyCapture.SetApartmentState(ApartmentState.STA);
+            //keyCapture.Start();
 
             state.Builder.Clear();
             state.CallMe = ReceiveWorld;
@@ -122,46 +122,46 @@ namespace View {
         }
 
         // TODO this slows it down quite a bit and doesn't increase speed of key capture, but does capture multiple keys
-        private void keyCapturer() {
-            StringBuilder tmp = new StringBuilder();
-            while (true) {
-                if (Keyboard.IsKeyDown(Key.Up)) {
-                    tmp.Append("(T)");
-                }
-                if (Keyboard.IsKeyDown(Key.Right)) {
-                    tmp.Append("(R)");
-                }
-                if (Keyboard.IsKeyDown(Key.Left)) {
-                    tmp.Append("(L)");
-                }
-                if (Keyboard.IsKeyDown(Key.Space)) {
-                    tmp.Append("(F)");
-                }
+        //private void keyCapturer() {
+        //    StringBuilder tmp = new StringBuilder();
+        //    while (true) {
+        //        if (Keyboard.IsKeyDown(Key.Up)) {
+        //            tmp.Append("(T)");
+        //        }
+        //        if (Keyboard.IsKeyDown(Key.Right)) {
+        //            tmp.Append("(R)");
+        //        }
+        //        if (Keyboard.IsKeyDown(Key.Left)) {
+        //            tmp.Append("(L)");
+        //        }
+        //        if (Keyboard.IsKeyDown(Key.Space)) {
+        //            tmp.Append("(F)");
+        //        }
 
-                this.Invoke(new MethodInvoker(() => this.keystrokes.Append(tmp.ToString())));
-                tmp.Clear();
-            }
-        }
+        //        this.Invoke(new MethodInvoker(() => this.keystrokes.Append(tmp.ToString())));
+        //        tmp.Clear();
+        //    }
+        //}
 
         // TODO not fast, and if you press another key, previous keys stop
-        // protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-        //    switch (keyData) {
-        //        case Keys.Up:
-        //            keystrokes.Append("(T)");
-        //            break;
-        //        case Keys.Left:
-        //            keystrokes.Append("(L)");
-        //            break;
-        //        case Keys.Right:
-        //            keystrokes.Append("(R)");
-        //            break;
-        //        case Keys.Space:
-        //            keystrokes.Append("(F)");
-        //            break;
-        //        default:
-        //            return base.ProcessCmdKey(ref msg, keyData);
-        //    }
-        //    return true;
-        //}
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
+            switch (keyData) {
+                case Keys.Up:
+                    keystrokes.Append("(T)");
+                    break;
+                case Keys.Left:
+                    keystrokes.Append("(L)");
+                    break;
+                case Keys.Right:
+                    keystrokes.Append("(R)");
+                    break;
+                case Keys.Space:
+                    keystrokes.Append("(F)");
+                    break;
+                default:
+                    return base.ProcessCmdKey(ref msg, keyData);
+            }
+            return true;
+        }
     }
 }

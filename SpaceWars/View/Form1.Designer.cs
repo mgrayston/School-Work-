@@ -97,7 +97,6 @@
             this.Controls.Add(this.serverText);
             this.Name = "SpaceWarsForm";
             this.Text = "Space Wars";
-            //this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SpaceWarsForm_KeyDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
