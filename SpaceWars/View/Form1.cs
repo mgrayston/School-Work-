@@ -80,11 +80,13 @@ namespace View {
         private void ReceiveStartup(SocketState state) {
             String[] response = Regex.Split(state.Builder.ToString(), @"(?<=[\n])");
             theWorld = new World(int.Parse(response[1]));
-            // Change the client size based on the received worldSize
-            this.Invoke(new MethodInvoker(() => ClientSize = new Size(theWorld.WorldSize, theWorld.WorldSize)));
+            // Change the client size based on the received worldSize; constant number is so the DrawingPanel 
+            // is not drawn where the buttons are, and to provide space for the scoreboard.
+            this.Invoke(new MethodInvoker(() => ClientSize = new Size(theWorld.WorldSize + 200, theWorld.WorldSize + 30)));
+            this.Invoke(new MethodInvoker(() => this.FormBorderStyle = FormBorderStyle.FixedSingle));
             drawingPanel = new DrawingPanel(theWorld);
-            drawingPanel.Location = new Point(0, 50);
-            drawingPanel.Size = new Size(this.ClientSize.Width, this.ClientSize.Height);
+            drawingPanel.Location = new Point(0, 30);
+            drawingPanel.Size = new Size(theWorld.WorldSize, theWorld.WorldSize);
             drawingPanel.BackColor = Color.Black;
 
             // Add the drawingPanel and invalidate the client to have it redrawn
