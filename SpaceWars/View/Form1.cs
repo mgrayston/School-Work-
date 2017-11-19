@@ -122,26 +122,26 @@ namespace View {
         }
 
         // TODO this slows it down quite a bit and doesn't increase speed of key capture, but does capture multiple keys
-        //private void keyCapturer() {
-        //    StringBuilder tmp = new StringBuilder();
-        //    while (true) {
-        //        if (Keyboard.IsKeyDown(Key.Up)) {
-        //            tmp.Append("(T)");
-        //        }
-        //        if (Keyboard.IsKeyDown(Key.Right)) {
-        //            tmp.Append("(R)");
-        //        }
-        //        if (Keyboard.IsKeyDown(Key.Left)) {
-        //            tmp.Append("(L)");
-        //        }
-        //        if (Keyboard.IsKeyDown(Key.Space)) {
-        //            tmp.Append("(F)");
-        //        }
+        private void keyCapturer() {
+            StringBuilder tmp = new StringBuilder();
+            while (true) {
+                if (Keyboard.IsKeyDown(Key.Up)) {
+                    tmp.Append("(T)");
+                }
+                if (Keyboard.IsKeyDown(Key.Right)) {
+                    tmp.Append("(R)");
+                }
+                if (Keyboard.IsKeyDown(Key.Left)) {
+                    tmp.Append("(L)");
+                }
+                if (Keyboard.IsKeyDown(Key.Space)) {
+                    tmp.Append("(F)");
+                }
 
-        //        this.Invoke(new MethodInvoker(() => this.keystrokes.Append(tmp.ToString())));
-        //        tmp.Clear();
-        //    }
-        //}
+                this.Invoke(new MethodInvoker(() => this.keystrokes.Append(tmp.ToString())));
+                tmp.Clear();
+            }
+        }
 
         // TODO not fast, and if you press another key, previous keys stop
         // protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
