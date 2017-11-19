@@ -2,7 +2,6 @@
 using SpaceWars;
 
 namespace Model {
-
     [JsonObject(MemberSerialization.OptIn)]
     public class Star {
         /// <summary>
@@ -24,9 +23,9 @@ namespace Model {
         [JsonProperty]
         private double mass;
 
-        public Star(int star, double mass) {
-            this.ID = star;
-            this.loc = new Vector2D(); //TODO center of screen
+        public Star(int ID, double mass) {
+            this.ID = ID;
+            this.loc = new Vector2D();
             this.mass = mass;
         }
 

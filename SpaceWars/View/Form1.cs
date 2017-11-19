@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Controller;
@@ -15,7 +14,7 @@ namespace View {
     /// </summary>
     public partial class SpaceWarsForm : Form {
 
-        // REMOVE?
+        // Used to access the socket for sending movement commands
         SocketState state;
 
         // World is a simple container for Players and Powerups
@@ -27,9 +26,6 @@ namespace View {
         // Used to collect keystrokes and send them to the server
         private StringBuilder keystrokes;
 
-        // Used to check if we are connected to the server
-        private bool connected;
-
         /// <summary>
         /// Form initializer
         /// </summary>
@@ -37,7 +33,6 @@ namespace View {
             InitializeComponent();
             this.AcceptButton = connectButton;
             keystrokes = new StringBuilder();
-            connected = false;
         }
 
         /// <summary>
@@ -60,9 +55,15 @@ namespace View {
             }
         }
 
+        /// <summary>
+        /// Called after attempting to connect to the server.
+        /// If connection was successful, send name to complete handshake.
+        /// Otherwise, prompts user to try connecting again.
+        /// </summary>
+        /// <param name="state"></param>
         private void HandleFirstContact(SocketState state) {
             if (!state.Socket.Connected) {
-                MessageBox.Show("Please Enter a valid server address");
+                MessageBox.Show("Connection failed, please try again.");
                 this.Invoke(new MethodInvoker(ToggleInputEnabled));
             }
             else {
@@ -73,6 +74,11 @@ namespace View {
             }
         }
 
+        /// <summary>
+        /// Receives information about the world and adds the DrawingPanel 
+        /// so that the world can begin being drawn.
+        /// </summary>
+        /// <param name="state"></param>
         private void ReceiveStartup(SocketState state) {
             String[] response = Regex.Split(state.Builder.ToString(), @"(?<=[\n])");
             theWorld = new World(int.Parse(response[1]));
@@ -92,22 +98,30 @@ namespace View {
             this.Invoke(new MethodInvoker(() => this.timer.Enabled = true));
             this.Invoke(new MethodInvoker(() => this.timer.Start()));
 
-            connected = true;
-            //Thread keyCapture = new Thread(keyCapturer);
-            //keyCapture.SetApartmentState(ApartmentState.STA);
-            //keyCapture.Start();
+            Thread keyCapture = new Thread(keyCapturer);
+            keyCapture.SetApartmentState(ApartmentState.STA);
+            keyCapture.Start();
 
             state.Builder.Clear();
             state.CallMe = ReceiveWorld;
             Network.GetData(state);
         }
 
+        /// <summary>
+        /// Recieves World information from the server and sends 
+        /// it to be processed. Begins receiving more information 
+        /// afterward.
+        /// </summary>
+        /// <param name="state"></param>
         private void ReceiveWorld(SocketState state) {
             Processor.ProcessData(theWorld, state);
             drawingPanel.Invalidate();
             Network.GetData(state);
         }
 
+        /// <summary>
+        /// Toggles the input boxes and ConnectButton.
+        /// </summary>
         private void ToggleInputEnabled() {
             if (this.connectButton.Enabled) {
                 this.connectButton.Enabled = false;
@@ -121,58 +135,51 @@ namespace View {
             }
         }
 
+        /// <summary>
+        /// Called when the Form Timer ticks. Used 
+        /// to regulate client framerate. Currently 
+        /// set to 7 milliseconds (~140 FPS).
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void timer_Tick(object sender, EventArgs e) {
             drawingPanel.Invalidate();
-            if (connected) {
-                lock (keystrokes) {
-                    string dataToSend = keystrokes.ToString() + "\n";
-                    keystrokes.Clear();
-                    Network.Send(state.Socket, dataToSend);
+        }
+
+        /// <summary>
+        /// Captures all input from user and sends it 
+        /// to the server.
+        /// </summary>
+        private void keyCapturer() {
+            // StringBuilder to store all current keystrokes
+            StringBuilder tmp = new StringBuilder();
+
+            while (true) {
+                if (Keyboard.IsKeyDown(Key.Up)) {
+                    tmp.Append("(T)");
                 }
+                if (Keyboard.IsKeyDown(Key.Right)) {
+                    tmp.Append("(R)");
+                }
+                if (Keyboard.IsKeyDown(Key.Left)) {
+                    tmp.Append("(L)");
+                }
+                if (Keyboard.IsKeyDown(Key.Space)) {
+                    tmp.Append("(F)");
+                }
+
+                Network.Send(state.Socket, tmp.ToString() + "\n");
+                tmp.Clear();
             }
         }
 
-        // TODO this slows it down quite a bit and doesn't increase speed of key capture, but does capture multiple keys
-        //private void keyCapturer() {
-        //    StringBuilder tmp = new StringBuilder();
-        //    while (true) {
-        //        if (Keyboard.IsKeyDown(Key.Up)) {
-        //            tmp.Append("(T)");
-        //        }
-        //        if (Keyboard.IsKeyDown(Key.Right)) {
-        //            tmp.Append("(R)");
-        //        }
-        //        if (Keyboard.IsKeyDown(Key.Left)) {
-        //            tmp.Append("(L)");
-        //        }
-        //        if (Keyboard.IsKeyDown(Key.Space)) {
-        //            tmp.Append("(F)");
-        //        }
-
-        //        this.Invoke(new MethodInvoker(() => this.keystrokes.Append(tmp.ToString())));
-        //        tmp.Clear();
-        //    }
-        //}
-
-        // TODO not fast, and if you press another key, previous keys stop
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-            switch (keyData) {
-                case Keys.Up:
-                    keystrokes.Append("(T)");
-                    break;
-                case Keys.Left:
-                    keystrokes.Append("(L)");
-                    break;
-                case Keys.Right:
-                    keystrokes.Append("(R)");
-                    break;
-                case Keys.Space:
-                    keystrokes.Append("(F)");
-                    break;
-                default:
-                    return base.ProcessCmdKey(ref msg, keyData);
-            }
-            return true;
+        /// <summary>
+        /// Used to ensure the connection is closed when the form is exited.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SpaceWarsForm_FormClosed(object sender, FormClosedEventArgs e) {
+            state.Socket.Close();
         }
     }
 }

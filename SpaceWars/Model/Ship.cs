@@ -49,11 +49,11 @@ namespace Model {
         [JsonProperty]
         private int score;
 
-        public Ship(int ship, string name) {
-            this.ID = ship;
+        public Ship(int ID, string name) {
+            this.ID = ID;
             this.name = name;
-            this.loc = new Vector2D(); //TODO randomize starting loc?
-            this.dir = new Vector2D(); //TODO randomize
+            this.loc = new Vector2D();
+            this.dir = new Vector2D();
             this.thrust = false;
             this.hp = 5;
             this.score = 0;

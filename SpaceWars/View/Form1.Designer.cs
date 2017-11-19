@@ -82,7 +82,7 @@
             // 
             // timer
             // 
-            this.timer.Interval = 50;
+            this.timer.Interval = 7;
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // SpaceWarsForm
@@ -97,6 +97,7 @@
             this.Controls.Add(this.serverText);
             this.Name = "SpaceWarsForm";
             this.Text = "Space Wars";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SpaceWarsForm_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

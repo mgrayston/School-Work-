@@ -15,7 +15,7 @@ namespace View {
 
         // Info for drawing Projectiles
         private static int projSize = 17;
-        Point projPnt = new Point(-(projSize / 2), -(projSize / 2));
+        Point projPnt = new Point(-(projSize / 2), -(projSize / 2) - 13);
 
         Bitmap blueProj = new Bitmap(Properties.Resources.shot_blue, new Size(projSize, projSize));
         Bitmap brownProj = new Bitmap(Properties.Resources.shot_brown, new Size(projSize, projSize));

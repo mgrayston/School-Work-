@@ -24,14 +24,27 @@ namespace Model {
         public ConcurrentDictionary<int, Ship> Ships { get => ships; set => ships = value; }
         public ConcurrentDictionary<int, Star> Stars { get => stars; set => stars = value; }
         public ConcurrentDictionary<int, Projectile> Projectiles { get => projectiles; set => projectiles = value; }
+
+        /// <summary>
+        /// Used to return an Enumerable list of Ships.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Ship> GetShips() {
             return ships.Values;
         }
         
+        /// <summary>
+        /// Used to return an Enumerable list of Projectiles.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Projectile> GetProjectiles() {
             return projectiles.Values;
         }
 
+        /// <summary>
+        /// Used to return an Enumerable list of Suns.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Star> GetStars() {
             return stars.Values;
         }

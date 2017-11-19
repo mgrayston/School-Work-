@@ -5,8 +5,17 @@ using System.Text;
 
 namespace Controller {
 
+    /// <summary>
+    /// Used for the connecting host to provide 
+    /// a callback function.
+    /// </summary>
+    /// <param name="state"></param>
     public delegate void NetworkAction(SocketState state);
 
+    /// <summary>
+    /// Class representing the state of a Socket, such as 
+    /// data it has been sent, the Socket, and a callback.
+    /// </summary>
     public class SocketState {
         private Socket socket;
         private int ID;
@@ -28,7 +37,21 @@ namespace Controller {
         public NetworkAction CallMe { get => callMe; set => callMe = value; }
     }
 
+    /// <summary>
+    /// Acts as a wrapper class for a Network. 
+    /// Allows connecting, receiving, and sending
+    /// data.
+    /// </summary>
     public static class Network {
+        public const int DEFAULT_PORT = 11000;
+
+        /// <summary>
+        /// Entrance point for connecting to a 
+        /// specified server.
+        /// </summary>
+        /// <param name="callMe"></param>
+        /// <param name="hostName"></param>
+        /// <returns></returns>
         public static Socket ConnectToServer(NetworkAction callMe, string hostName) {
             Socket socket;
             IPAddress ipAddress;
@@ -43,6 +66,13 @@ namespace Controller {
             return socket;
         }
 
+        /// <summary>
+        /// Called after sending a request to connect.
+        /// Attempts to complete the connection, and writes 
+        /// to debug if it fails. Always calls the provided
+        /// callback CallMe.
+        /// </summary>
+        /// <param name="stateObject"></param>
         private static void ConnectedCallback(IAsyncResult stateObject) {
             SocketState state = (SocketState)stateObject.AsyncState;
 
@@ -53,8 +83,9 @@ namespace Controller {
             catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine("Unable to connect to server. Error occured: " + e);
             }
-
-            state.CallMe(state);
+            finally {
+                state.CallMe(state);
+            }
         }
 
         /// <summary>
@@ -67,9 +98,14 @@ namespace Controller {
             state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
         }
 
+        /// <summary>
+        /// Called after requesting data from the connection.
+        /// Appends received data to the SocketState's StringBuilder
+        /// and calls the CallMe function.
+        /// </summary>
+        /// <param name="ar"></param>
         private static void ReceiveCallback(IAsyncResult ar) {
             SocketState state = (SocketState)ar.AsyncState;
-
             int bytesRead = state.Socket.EndReceive(ar);
 
             // If the socket is still open
@@ -80,25 +116,34 @@ namespace Controller {
                 state.Builder.Append(theMessage);
                 state.CallMe(state);
             }
-
-            // REMOVE ?
-            // Continue the "event loop" that was started on line 96.
-            // Start listening for more parts of a message, or more new messages
-            //state.Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ReceiveCallback, state);
         }
 
+        /// <summary>
+        /// Wrapper for sending data to the connection.
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="data"></param>
         public static void Send(Socket socket, String data) {
             Byte[] toSend = Encoding.UTF8.GetBytes(data);
             socket.BeginSend(toSend, 0, toSend.Length, SocketFlags.None, SendCallback, socket);
         }
 
+        /// <summary>
+        /// Finishes used to finish sending data.
+        /// </summary>
+        /// <param name="ar"></param>
         private static void SendCallback(IAsyncResult ar) {
             Socket socket = (Socket)ar.AsyncState;
             socket.EndSend(ar);
         }
 
-        public const int DEFAULT_PORT = 11000;
-
+        /// <summary>
+        /// Wrapper for making a socket. Attempts to parse and 
+        /// connect to the provided hostName.
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="socket"></param>
+        /// <param name="ipAddress"></param>
         private static void MakeSocket(string hostName, out Socket socket, out IPAddress ipAddress) {
             ipAddress = IPAddress.None;
             socket = null;

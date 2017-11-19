@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 
 namespace Model {
-
     [JsonObject(MemberSerialization.OptIn)]
     public class Projectile {
         /// <summary>
@@ -35,12 +34,12 @@ namespace Model {
         [JsonProperty]
         private int owner;
 
-        public Projectile(int proj, int owner) {
-            this.ID = proj;
+        public Projectile(int ID, int owner) {
+            this.ID = ID;
             this.owner = owner;
-            this.loc = new Vector2D(); //TODO front location of whever the ship is.
-            this.dir = new Vector2D(); //TODO direction of ship
-            this.alive = false;
+            this.loc = new Vector2D();
+            this.dir = new Vector2D();
+            this.alive = true;
         }
 
         public int id { get => ID; }
