@@ -9,12 +9,12 @@ namespace View {
         private World theWorld;
 
         // Info for drawing Stars
-        private static int starSize = 60;
+        private static int starSize = 65;
         Point starPnt = new Point(-(starSize / 2), -(starSize / 2));
         Bitmap starImg = new Bitmap(Properties.Resources.star, new Size(starSize, starSize));
 
         // Info for drawing Projectiles
-        private static int projSize = 10;
+        private static int projSize = 17;
         Point projPnt = new Point(-(projSize / 2), -(projSize / 2));
 
         Bitmap blueProj = new Bitmap(Properties.Resources.shot_blue, new Size(projSize, projSize));
@@ -27,7 +27,7 @@ namespace View {
         Bitmap yellowProj = new Bitmap(Properties.Resources.shot_yellow, new Size(projSize, projSize));
 
         // Info for drawing Ships
-        private static int shipSize = 25;
+        private static int shipSize = 35;
         Point shipPnt = new Point(-(shipSize / 2), -(shipSize / 2));
 
         Bitmap blueCoastImg = new Bitmap(Properties.Resources.ship_coast_blue, new Size(shipSize, shipSize));
