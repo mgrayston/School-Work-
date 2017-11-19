@@ -35,6 +35,7 @@
             this.nameText = new System.Windows.Forms.TextBox();
             this.connectButton = new System.Windows.Forms.Button();
             this.timer = new System.Windows.Forms.Timer(this.components);
+            this.helpButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // serverText
@@ -85,11 +86,22 @@
             this.timer.Interval = 7;
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
+            // helpButton
+            // 
+            this.helpButton.Location = new System.Drawing.Point(437, 6);
+            this.helpButton.Name = "helpButton";
+            this.helpButton.Size = new System.Drawing.Size(75, 23);
+            this.helpButton.TabIndex = 5;
+            this.helpButton.Text = "Help";
+            this.helpButton.UseVisualStyleBackColor = true;
+            this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
+            // 
             // SpaceWarsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(884, 661);
+            this.Controls.Add(this.helpButton);
             this.Controls.Add(this.connectButton);
             this.Controls.Add(this.nameText);
             this.Controls.Add(this.nameLabel);
@@ -111,6 +123,7 @@
         private System.Windows.Forms.TextBox nameText;
         private System.Windows.Forms.Button connectButton;
         private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.Button helpButton;
     }
 }
 

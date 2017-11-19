@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading;
 using System.Windows.Input;
+using System.IO;
 
 namespace View {
     /// <summary>
@@ -180,6 +181,20 @@ namespace View {
         /// <param name="e"></param>
         private void SpaceWarsForm_FormClosed(object sender, FormClosedEventArgs e) {
             state.Socket.Close();
+        }
+
+        private void helpButton_Click(object sender, EventArgs e)
+        {
+            showReadMe();
+        }
+
+        /// <summary>
+        /// Message box displays README.txt file to explain functionality to User.
+        /// </summary>
+        /// <returns></returns>
+        private DialogResult showReadMe()
+        {
+            return MessageBox.Show(File.ReadAllText(@"..\..\..\Resources\README.txt"), "README", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
