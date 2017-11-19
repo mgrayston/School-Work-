@@ -15,15 +15,25 @@ namespace Model {
             ships = new ConcurrentDictionary<int, Ship>();
             stars = new ConcurrentDictionary<int, Star>();
             projectiles = new ConcurrentDictionary<int, Model.Projectile>();
-            this.id = id;
-            this.worldSize = worldSize;
+            this.Id = id;
+            this.WorldSize = worldSize;
         }
         
-        public int Id { get => id; }
-        public int WorldSize { get => worldSize; }
+        public int Id { get => id; set => id = value; }
+        public int WorldSize { get => worldSize; set => worldSize = value; }
         public ConcurrentDictionary<int, Ship> Ships { get => ships; set => ships = value; }
         public ConcurrentDictionary<int, Star> Stars { get => stars; set => stars = value; }
         public ConcurrentDictionary<int, Projectile> Projectiles { get => projectiles; set => projectiles = value; }
+        public IEnumerable<Ship> GetShips() {
+            return ships.Values;
+        }
+        
+        public IEnumerable<Projectile> GetProjectiles() {
+            return projectiles.Values;
+        }
 
+        public IEnumerable<Star> GetStars() {
+            return stars.Values;
+        }
     }
 }

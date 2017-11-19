@@ -1,38 +1,36 @@
-﻿using SpaceWars;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using SpaceWars;
 
-namespace Model
-{
-    public class Star
-    {
+namespace Model {
+
+    [JsonObject(MemberSerialization.OptIn)]
+    public class Star {
         /// <summary>
         /// Unique ID
         /// </summary>
-        private int star;
+        [JsonProperty(PropertyName = "proj")]
+        private int ID;
 
         /// <summary>
         /// Vector2D representing the location
         /// </summary>
+        [JsonProperty]
         private Vector2D loc;
 
         /// <summary>
         /// a double representing the star's mass. Note that the sample client does not use this information, 
         /// but you may choose to display stars differently based on their mass.
         /// </summary>
+        [JsonProperty]
         private double mass;
 
-        public Star(int star, double mass)
-        {
-            this.star = star;
+        public Star(int star, double mass) {
+            this.ID = star;
             this.loc = new Vector2D(); //TODO center of screen
             this.mass = mass;
         }
 
-        public int ID { get => star; }
+        public int id { get => ID; }
         public Vector2D Loc { get => loc; }
         public double Mass { get => mass; }
     }

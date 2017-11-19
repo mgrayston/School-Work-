@@ -1,21 +1,17 @@
 ﻿using Model;
 using SpaceWars;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace View
-{
-    class DrawingPanel : Panel
-    {
+namespace View {
+    class DrawingPanel : Panel {
         private World theWorld;
-        public DrawingPanel(Model.World w)
-        {
-            DoubleBuffered = true;
+        private static int starSize = 60;
+        Point starPnt = new Point(-(starSize / 2), -(starSize / 2));
+        Bitmap starImg = new Bitmap(Properties.Resources.star, new Size(starSize, starSize));
+
+        public DrawingPanel(World w) {
+            this.DoubleBuffered = true;
             theWorld = w;
         }
 
@@ -25,8 +21,7 @@ namespace View
         /// <param name="size">The world (and image) size</param>
         /// <param name="w">The worldspace coordinate</param>
         /// <returns></returns>
-        private static int WorldSpaceToImageSpace(int size, double w)
-        {
+        private static int WorldSpaceToImageSpace(int size, double w) {
             return (int)w + size / 2;
         }
 
@@ -44,8 +39,7 @@ namespace View
         /// <param name="worldY">The Y coordinate of the object in world space</param>
         /// <param name="angle">The orientation of the objec, measured in degrees clockwise from "up"</param>
         /// <param name="drawer">The drawer delegate. After the transformation is applied, the delegate is invoked to draw whatever it wants</param>
-        private void DrawObjectWithTransform(PaintEventArgs e, object o, int worldSize, double worldX, double worldY, double angle, ObjectDrawer drawer)
-        {
+        private void DrawObjectWithTransform(PaintEventArgs e, object o, int worldSize, double worldX, double worldY, double angle, ObjectDrawer drawer) {
             // Perform the transformation
             int x = WorldSpaceToImageSpace(worldSize, worldX);
             int y = WorldSpaceToImageSpace(worldSize, worldY);
@@ -57,9 +51,8 @@ namespace View
             e.Graphics.ResetTransform();
         }
 
-        private void ShipDrawer(object o, PaintEventArgs e)
-        {
-            int shipWidth = 35;
+        private void ShipDrawer(object o, PaintEventArgs e) {
+            int shipWidth = 20;
             Ship s = o as Ship;
 
             // first eight ships are different colors. After eight they are the same.
@@ -73,57 +66,46 @@ namespace View
             using (System.Drawing.SolidBrush purpleBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Purple))
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
             using (System.Drawing.SolidBrush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
-            using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green))
-            {
+            using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green)) {
                 Rectangle r = new Rectangle(-(shipWidth / 2), -(shipWidth / 2), shipWidth, shipWidth);
-                if (s.ID == 1)
+                if (s.id == 1)
                     e.Graphics.FillRectangle(greenBrush, r);
-                else if (s.ID == 2)
+                else if (s.id == 2)
                     e.Graphics.FillRectangle(blueBrush, r);
-                else if (s.ID == 3)
+                else if (s.id == 3)
                     e.Graphics.FillRectangle(redBrush, r);
-                else if (s.ID == 4)
+                else if (s.id == 4)
                     e.Graphics.FillRectangle(purpleBrush, r);
-                else if (s.ID == 5)
+                else if (s.id == 5)
                     e.Graphics.FillRectangle(whiteBrush, r);
-                else if (s.ID == 6)
+                else if (s.id == 6)
                     e.Graphics.FillRectangle(orangeBrush, r);
-                else if (s.ID == 7)
+                else if (s.id == 7)
                     e.Graphics.FillRectangle(yellowBrush, r);
-                else if (s.ID == 8)
+                else if (s.id == 8)
                     e.Graphics.FillRectangle(grayBrush, r);
-                else if (s.ID > 8)
+                else if (s.id > 8)
                     e.Graphics.FillRectangle(magentaBrush, r);
             }
         }
 
-        private void ProjectileDrawer(object o, PaintEventArgs e)
-        {
+        private void ProjectileDrawer(object o, PaintEventArgs e) {
             int projWidth = 6;
             int projHeight = 6;
             Projectile p = o as Projectile;
 
-            using(System.Drawing.Bitmap starImg = new System.Drawing.Bitmap(Image.FromFile("..\\..\\Resources\\Graphics\\star.jpg"), new Size(projWidth, projHeight)))
-            {
+            using (System.Drawing.Bitmap starImg = new System.Drawing.Bitmap(Properties.Resources.star, new Size(projWidth, projHeight))) {
                 Point pnt = new Point(-(projWidth / 2), -(projHeight / 2));
 
                 e.Graphics.DrawImage(starImg, pnt);
             }
         }
 
-        private void StarDrawer(object o, PaintEventArgs e)
-        {
+        private void StarDrawer(object o, PaintEventArgs e) {
             Star s = o as Star;
-            int width = 10;
-            int height = 10;
 
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            using (System.Drawing.Bitmap starImg = new System.Drawing.Bitmap(Image.FromFile("..\\..\\Resources\\Graphics\\star.jpg"), new Size(width, height)))
-            {
-                Point pnt = new Point(-(width / 2), -(height / 2));
-
-                e.Graphics.DrawImage(starImg, pnt);     
-            }
+            e.Graphics.DrawImage(starImg, starPnt);
         }
 
         /// <summary>
@@ -131,12 +113,12 @@ namespace View
         /// </summary>
         /// <param name="ID"> Unique Identification number</param>
         /// <returns>A color based on ID</returns>
-        private Color getIDColor(int ID)
-        {
+
+        // TODO change so that it returns the sprite instead maybe?
+        private Color getIDColor(int ID) {
             Color retColor;
             int modResult = ID % 10;
-            switch (modResult)
-            {
+            switch (modResult) {
                 case 0:
                     retColor = Color.Blue; break;
                 case 1:
@@ -164,34 +146,23 @@ namespace View
         }
 
         // This method is invoked when the DrawingPanel needs to be re-drawn
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            lock (theWorld)
-            {
+        protected override void OnPaint(PaintEventArgs e) {
+            lock (theWorld) {
                 // Draw the stars
-                foreach (KeyValuePair<int, Star> s in theWorld.Stars)
-                {
-                    //System.Diagnostics.Debug.WriteLine("drawing star at " + s.Value.Loc);
-                    Vector2D loc = s.Value.Loc;
-                    DrawObjectWithTransform(e, s.Value, theWorld.WorldSize, loc.GetX(), loc.GetY(), 0, StarDrawer);
+                foreach (Star star in theWorld.GetStars()) {
+                    DrawObjectWithTransform(e, star, theWorld.WorldSize, star.Loc.GetX(), star.Loc.GetY(), 0, StarDrawer);
                 }
 
                 // Draw the ships
-                foreach (KeyValuePair<int, Ship> ship in theWorld.Ships)
-                {
-                    //System.Diagnostics.Debug.WriteLine("drawing ship at " + ship.Value.Loc);
-                    Vector2D loc = ship.Value.Loc;
-                    Vector2D dir = ship.Value.Dir;
-                    DrawObjectWithTransform(e, ship.Value, theWorld.WorldSize, loc.GetX(), loc.GetY(), dir.ToAngle(), ShipDrawer);
+                foreach (Ship ship in theWorld.GetShips()) {
+                    Vector2D loc = ship.Loc;
+                    Vector2D dir = ship.Dir;
+                    DrawObjectWithTransform(e, ship, theWorld.WorldSize, loc.GetX(), loc.GetY(), dir.ToAngle(), ShipDrawer);
                 }
 
                 // Draw the projectiles
-                foreach (KeyValuePair<int, Projectile> p in theWorld.Projectiles)
-                {
-                    //System.Diagnostics.Debug.WriteLine("drawing proj at " + p.Value.Loc);
-                    Vector2D loc = p.Value.Loc;
-                    Vector2D dir = p.Value.Dir;
-                    DrawObjectWithTransform(e, p.Value, theWorld.WorldSize, loc.GetX(), loc.GetY(), dir.ToAngle(), ProjectileDrawer);
+                foreach (Projectile projectile in theWorld.GetProjectiles()) {
+                    DrawObjectWithTransform(e, projectile, theWorld.WorldSize, projectile.Loc.GetX(), projectile.Loc.GetY(), projectile.Dir.ToAngle(), ProjectileDrawer);
                 }
             }
 

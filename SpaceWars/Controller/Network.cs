@@ -55,10 +55,6 @@ namespace Controller {
                 return;
             }
 
-            // Don't start an event loop to receive data from the server. The client might not want to do that.
-            //state.theSocket.BeginReceive(state.messageBuffer, 0, state.messageBuffer.Length, SocketFlags.None, ReceiveCallback, state);
-
-            // Instead, just invoke the client's delegate so it can take whatever action it desires.
             state.CallMe(state);
         }
 

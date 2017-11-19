@@ -1,38 +1,38 @@
-﻿using SpaceWars;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using SpaceWars;
 
-namespace Model
-{
-    public class Ship
-    {
+namespace Model {
+    [JsonObject(MemberSerialization.OptIn)]
+    public class Ship {
         /// <summary>
         /// Unique ship ID
         /// </summary>
-        private int ship;
+        [JsonProperty(PropertyName = "ship")]
+        private int ID;
 
         /// <summary>
         /// Player's name
         /// </summary>
+        [JsonProperty]
         private string name;
 
         /// <summary>
         /// Vector2D representing the ship's location
         /// </summary>
+        [JsonProperty]
         private Vector2D loc;
 
         /// <summary>
         /// Vector2D representing the ship's orientation
         /// </summary>
+        [JsonProperty]
         private Vector2D dir;
 
         /// <summary>
         /// bool representing whether or not the ship was firing engines on that frame. 
         /// This can be used by the client to draw a different representation of the ship, e.g., showing engine exhaust
         /// </summary>
+        [JsonProperty]
         private bool thrust;
 
         /// <summary>
@@ -40,16 +40,17 @@ namespace Model
         /// This value ranges from 0 - 5. If it is 0, then this ship is temporarily destroyed, and waiting to respawn. 
         /// If the player controlling this ship disconnects, the server will discontinue sending this ship
         /// </summary>
+        [JsonProperty]
         private int hp;
 
         /// <summary>
         /// int representing the ship's score
         /// </summary>
+        [JsonProperty]
         private int score;
 
-        public Ship(int ship, string name)
-        {
-            this.ship = ship;
+        public Ship(int ship, string name) {
+            this.ID = ship;
             this.name = name;
             this.loc = new Vector2D(); //TODO randomize starting loc?
             this.dir = new Vector2D(); //TODO randomize
@@ -58,7 +59,7 @@ namespace Model
             this.score = 0;
         }
 
-        public int ID{get => ship;}
+        public int id { get => ID; }
         public string Name { get => name; }
         public Vector2D Loc { get => loc; }
         public Vector2D Dir { get => dir; }

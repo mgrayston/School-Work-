@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\View.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +36,7 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,6 +48,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DrawingPanel.cs">
@@ -70,6 +73,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -98,6 +102,81 @@
       <Project>{EBEE51D3-9ECE-43A6-909A-A80FCC139734}</Project>
       <Name>Vector2D</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-blue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-brown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-green.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-grey.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-red.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-violet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-white.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-coast-yellow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-blue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-brown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-green.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-grey.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-red.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-violet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-white.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ship-thrust-yellow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-blue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-brown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-green.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-grey.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-red.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-violet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-white.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shot-yellow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\star.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

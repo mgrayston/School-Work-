@@ -1,6 +1,6 @@
 ﻿namespace View
 {
-    partial class spaceWarsForm
+    partial class SpaceWarsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,11 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.serverText = new System.Windows.Forms.TextBox();
             this.serverLabel = new System.Windows.Forms.Label();
             this.nameLabel = new System.Windows.Forms.Label();
             this.nameText = new System.Windows.Forms.TextBox();
             this.connectButton = new System.Windows.Forms.Button();
+            this.timer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // serverText
@@ -78,7 +80,12 @@
             this.connectButton.UseVisualStyleBackColor = true;
             this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
-            // spaceWarsForm
+            // timer
+            // 
+            this.timer.Interval = 50;
+            this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            // 
+            // SpaceWarsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -88,8 +95,9 @@
             this.Controls.Add(this.nameLabel);
             this.Controls.Add(this.serverLabel);
             this.Controls.Add(this.serverText);
-            this.Name = "spaceWarsForm";
+            this.Name = "SpaceWarsForm";
             this.Text = "Space Wars";
+            //this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SpaceWarsForm_KeyDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -102,6 +110,7 @@
         private System.Windows.Forms.Label nameLabel;
         private System.Windows.Forms.TextBox nameText;
         private System.Windows.Forms.Button connectButton;
+        private System.Windows.Forms.Timer timer;
     }
 }
 

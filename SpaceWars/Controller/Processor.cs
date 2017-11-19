@@ -29,19 +29,19 @@ namespace Controller {
                 {
                     Ship theShip = JsonConvert.DeserializeObject<Ship>(part);
                     //world.Ships.Add(theShip.ID, theShip;
-                    world.Ships[theShip.ID] = theShip;
+                    world.Ships[theShip.id] = theShip;
                 }
                 else if (token.Path == "proj")
                 {
                     Projectile theProj = JsonConvert.DeserializeObject<Projectile>(part);
                     //world.Projectiles.Add(theProj.ID, theProj);
-                    world.Projectiles[theProj.ID] = theProj;
+                    world.Projectiles[theProj.id] = theProj;
                 }
                 else if (token.Path == "star")
                 {
                     Star theStar = JsonConvert.DeserializeObject<Star>(part);
                     //world.Stars.Add(theStar.ID, theStar);
-                    world.Stars[theStar.ID] = theStar;
+                    world.Stars[theStar.id] = theStar;
                 }
                 state.Builder.Remove(0, part.Length);
             }
