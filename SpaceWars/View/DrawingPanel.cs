@@ -110,67 +110,83 @@ namespace View {
 
             switch (ship.id % 8) {
                 case 1:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(blueThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(blueCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(blueThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(blueCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 2:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(brownThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(brownCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(brownThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(brownCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 3:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(greenThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(greenCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(greenThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(greenCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 4:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(greyThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(greyCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(greyThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(greyCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 5:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(redThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(redCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(redThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(redCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 6:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(violetThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(violetCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(violetThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(violetCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 7:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(whiteThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(whiteCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(whiteThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(whiteCoastImg, shipPnt);
+                        }
                     }
                     break;
                 case 0:
-                    if (ship.Thrust) {
-                        e.Graphics.DrawImage(yellowThrustImg, shipPnt);
-                    }
-                    else {
-                        e.Graphics.DrawImage(yellowCoastImg, shipPnt);
+                    if (ship.HP > 0) {
+                        if (ship.Thrust) {
+                            e.Graphics.DrawImage(yellowThrustImg, shipPnt);
+                        }
+                        else {
+                            e.Graphics.DrawImage(yellowCoastImg, shipPnt);
+                        }
                     }
                     break;
             }
