@@ -284,5 +284,7 @@ namespace View {
             // Do anything that Panel (from which we inherit) needs to do
             base.OnPaint(e);
         }
+
+
     }
 }

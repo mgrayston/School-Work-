@@ -24,6 +24,9 @@ namespace View {
         // DrawingPanel where all objects are drawn
         private DrawingPanel drawingPanel;
 
+        // DrawingPanel where all objects are drawn
+        private ScorePanel scorePanel;
+
         // Used to collect keystrokes and send them to the server
         private StringBuilder keystrokes;
 
@@ -92,8 +95,15 @@ namespace View {
             drawingPanel.Size = new Size(theWorld.WorldSize, theWorld.WorldSize);
             drawingPanel.BackColor = Color.Black;
 
+            //add scoreboard
+            scorePanel = new ScorePanel(theWorld);
+            scorePanel.Location = new Point(theWorld.WorldSize, 30);
+            scorePanel.Size = new Size(ClientSize.Width-theWorld.WorldSize, theWorld.WorldSize);
+            scorePanel.BackColor = Color.White;
+
             // Add the drawingPanel and invalidate the client to have it redrawn
             this.Invoke(new MethodInvoker(() => this.Controls.Add(drawingPanel)));
+            this.Invoke(new MethodInvoker(() => this.Controls.Add(scorePanel)));
             this.Invoke(new MethodInvoker(() => this.Invalidate()));
 
             this.Invoke(new MethodInvoker(() => this.timer.Enabled = true));
@@ -128,11 +138,13 @@ namespace View {
                 this.connectButton.Enabled = false;
                 this.serverText.Enabled = false;
                 this.nameText.Enabled = false;
+                this.helpButton.Enabled = false;
             }
             else {
                 this.connectButton.Enabled = true;
                 this.serverText.Enabled = true;
                 this.nameText.Enabled = true;
+                this.helpButton.Enabled = true;
             }
         }
 
