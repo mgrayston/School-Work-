@@ -7,7 +7,7 @@ namespace Model {
         /// <summary>
         /// Unique ID
         /// </summary>
-        [JsonProperty(PropertyName = "proj")]
+        [JsonProperty(PropertyName = "star")]
         private int ID;
 
         /// <summary>
