@@ -252,7 +252,6 @@ namespace View {
         /// <param name="o">Object to draw</param>
         /// <param name="e">PaintEventArgs</param>
         private void StarDrawer(object o, PaintEventArgs e) {
-            Star s = o as Star;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             e.Graphics.DrawImage(starImg, starPnt);
         }
@@ -263,19 +262,17 @@ namespace View {
         /// <param name="e">PaintEventArgs</param>
         protected override void OnPaint(PaintEventArgs e) {
             lock (theWorld) {
-                // Draw the stars
+                // Draw the Stars
                 foreach (Star star in theWorld.GetStars()) {
                     DrawObjectWithTransform(e, star, theWorld.WorldSize, star.Loc.GetX(), star.Loc.GetY(), 0, StarDrawer);
                 }
 
-                // Draw the ships
+                // Draw the Ships
                 foreach (Ship ship in theWorld.GetShips()) {
-                    Vector2D loc = ship.Loc;
-                    Vector2D dir = ship.Dir;
-                    DrawObjectWithTransform(e, ship, theWorld.WorldSize, loc.GetX(), loc.GetY(), dir.ToAngle(), ShipDrawer);
+                    DrawObjectWithTransform(e, ship, theWorld.WorldSize, ship.Loc.GetX(), ship.Loc.GetY(), ship.Dir.ToAngle(), ShipDrawer);
                 }
 
-                // Draw the projectiles
+                // Draw the Projectiles
                 foreach (Projectile projectile in theWorld.GetProjectiles()) {
                     DrawObjectWithTransform(e, projectile, theWorld.WorldSize, projectile.Loc.GetX(), projectile.Loc.GetY(), projectile.Dir.ToAngle(), ProjectileDrawer);
                 }
