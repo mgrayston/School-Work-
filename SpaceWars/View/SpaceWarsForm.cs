@@ -196,15 +196,6 @@ namespace View {
         }
 
         /// <summary>
-        /// Opens an info dialog when the helpButton is clicked.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void HelpButton_Click(object sender, EventArgs e) {
-            ShowReadMe();
-        }
-
-        /// <summary>
         /// Message box displays README.txt file to explain functionality to User.
         /// </summary>
         /// <returns></returns>
@@ -234,6 +225,12 @@ namespace View {
                 state.Socket.BeginDisconnect(false, DisposeSocket, state);
             }
             Application.Exit();
+        }
+
+        private void helpButton_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            ShowReadMe();
+            this.drawingPanel.Focus();
         }
     }
 }

@@ -90,7 +90,7 @@
             this.helpButton.TabStop = false;
             this.helpButton.Text = "Help";
             this.helpButton.UseVisualStyleBackColor = true;
-            this.helpButton.Click += new System.EventHandler(this.HelpButton_Click);
+            this.helpButton.MouseClick += new System.Windows.Forms.MouseEventHandler(this.helpButton_MouseClick);
             // 
             // SpaceWarsForm
             // 
