@@ -1,8 +1,10 @@
-﻿using System;
-using Model;
+﻿using Model;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Timers;
+using System.Collections.Generic;
+using System;
 
 namespace Controller {
     /// <summary>
@@ -12,6 +14,7 @@ namespace Controller {
         public static void ProcessData(World world, SocketState state) {
             string total = state.Builder.ToString();
             string[] parts = Regex.Split(total, @"(?<=[\n])");
+
             foreach (string part in parts) {
                 if (part.Length == 0) {
                     continue;
@@ -20,14 +23,18 @@ namespace Controller {
                     break;
                 }
 
-                Console.WriteLine("Received: " + part);
-
                 JObject jsonObj = JObject.Parse(part);
                 var token = jsonObj.First;
 
                 if (token.Path == "ship") {
                     Ship theShip = JsonConvert.DeserializeObject<Ship>(part);
                     world.Ships[theShip.id] = theShip;
+                    if (!world.Timers.ContainsKey(theShip.id)) {
+                        world.Timers[theShip.id] = new Timer(2000);
+                        world.Timers[theShip.id].Elapsed += (sender, e) => DisposeShip(sender, e, world, theShip.id);
+                    }
+                    world.Timers[theShip.id].Stop();
+                    world.Timers[theShip.id].Start();
                 }
                 else if (token.Path == "proj") {
                     Projectile theProj = JsonConvert.DeserializeObject<Projectile>(part);
@@ -39,6 +46,11 @@ namespace Controller {
                 }
                 state.Builder.Remove(0, part.Length);
             }
+        }
+        private static void DisposeShip(object sender, ElapsedEventArgs e, World world, int ID) {
+            Ship removed;
+            world.Ships.TryRemove(ID, out removed);
+            world.Timers[ID].Dispose();
         }
     }
 }

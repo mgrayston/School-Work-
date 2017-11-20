@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Timers;
 
 namespace Model {
     public class World {
@@ -10,11 +11,13 @@ namespace Model {
         private ConcurrentDictionary<int, Ship> ships;
         private ConcurrentDictionary<int, Star> stars;
         private ConcurrentDictionary<int, Projectile> projectiles;
+        private ConcurrentDictionary<int, Timer> timers;
 
         public World(int worldSize, int id = 0) {
             ships = new ConcurrentDictionary<int, Ship>();
             stars = new ConcurrentDictionary<int, Star>();
-            projectiles = new ConcurrentDictionary<int, Model.Projectile>();
+            projectiles = new ConcurrentDictionary<int, Projectile>();
+            Timers = new ConcurrentDictionary<int, Timer>();
             this.Id = id;
             this.WorldSize = worldSize;
         }
@@ -24,6 +27,7 @@ namespace Model {
         public ConcurrentDictionary<int, Ship> Ships { get => ships; set => ships = value; }
         public ConcurrentDictionary<int, Star> Stars { get => stars; set => stars = value; }
         public ConcurrentDictionary<int, Projectile> Projectiles { get => projectiles; set => projectiles = value; }
+        public ConcurrentDictionary<int, Timer> Timers { get => timers; set => timers = value; }
 
         /// <summary>
         /// Used to return an Enumerable list of Ships.

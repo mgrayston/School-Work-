@@ -7,82 +7,71 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace View
-{
-    class ScorePanel : Panel
-    {
-        // World this DrawingPanel draws
+namespace View {
+    class ScorePanel : Panel {
+        // World this ScorePanel draws
         private World theWorld;
 
         /// <summary>
-        /// Constructor for DrawingPanel
+        /// Constructor for ScorePanel
         /// </summary>
-        /// <param name="w">World that is being drawn on this DrawingPanel.</param>
-        public ScorePanel(World w)
-        {
+        /// <param name="w">World that is being drawn on this ScorePanel.</param>
+        public ScorePanel(World w) {
             this.DoubleBuffered = true;
             theWorld = w;
         }
 
-        private void ScoreboardDrawer(PaintEventArgs e)
-        {
-            int yLoc = 0;
-            int xLoc = theWorld.WorldSize + 2;
-            // Draw the scoreboard
-            foreach (Ship player in theWorld.GetShips())
-            {
-                yLoc += 20; //mode down for each iteration
-                e.Graphics.DrawString(player.Name + ": " + player.Score, new Font("Arial", 16), new SolidBrush(Color.Red), new Point(xLoc, yLoc));
-            }
-        }
-
-        private Color GetTextColor(int ID)
-        {
-            Color retColor = Color.Black;
-            switch (ID)
-            {
+        /// <summary>
+        /// Returns a color based on the ship ID.
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        private Color GetPenColor(int ID) {
+            switch (ID % 8) {
                 case 1:
-                    retColor =  Color.Blue;
-                    break;
+                    return Color.Blue;
                 case 2:
-                    retColor = Color.Brown;
-                    break;
+                    return Color.Brown;
                 case 3:
-                    retColor = Color.Green;
-                    break;
+                    return Color.Green;
                 case 4:
-                    retColor = Color.Gray;
-                    break;
+                    return Color.Gray;
                 case 5:
-                    retColor = Color.Red;
-                    break;
+                    return Color.Red;
                 case 6:
-                    retColor = Color.Violet;
-                    break;
+                    return Color.Violet;
                 case 7:
-                    retColor = Color.Black;
-                    break;
+                    return Color.Silver;
                 case 0:
-                    retColor = Color.Yellow;
-                    break;
+                    return Color.Yellow;
             }
-            return retColor;
+            return Color.Black;
         }
 
-        protected override void OnPaint(PaintEventArgs e)
-        {
+        /// <summary>
+        /// Draws the scoreboard and health bars.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnPaint(PaintEventArgs e) {
             int yLoc = 0;
-            int xLoc = 0;
+            SolidBrush textBrush = new SolidBrush(Color.Black);
+            Font textFont = new Font(FontFamily.GenericSerif, 16);
+            Pen rectPen = new Pen(Color.Black);
+
             // Draw the scoreboard
-            foreach (Ship player in theWorld.GetShips())
-            {
+            foreach (Ship ship in theWorld.GetShips()) {
+                e.Graphics.DrawString(ship.Name + ": " + ship.Score, textFont, textBrush, new Point(0, yLoc));
+                e.Graphics.FillRectangle(new SolidBrush(GetPenColor(ship.id)), 95, yLoc, 30 * ship.HP, 20);
+
+                // Draws bars to separate the HP of the ship (five rectangles)
+                for (int barChunk = 0; barChunk < 5; barChunk++) {
+                    e.Graphics.DrawRectangle(rectPen, 95 + 30 * barChunk, yLoc, 30, 20);
+                }
                 yLoc += 20;
-                e.Graphics.DrawString(player.Name + ": " + player.Score, new Font("Arial", 16), new SolidBrush(GetTextColor(player.id)), new Point(xLoc, yLoc));
             }
 
             // Do anything that Panel (from which we inherit) needs to do
             base.OnPaint(e);
         }
-
     }
 }

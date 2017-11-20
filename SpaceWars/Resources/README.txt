@@ -1,6 +1,6 @@
 ﻿Authors:
 	Matt Grayston
-	Chris Nielson
+	Christopher Nielson
 
 CS 3500 - Software Practice
 SpaceWars
@@ -20,7 +20,14 @@ Instructions:
 3. Game Rules/Objectives:
 	a. Shoot as many opponents as possible without being shot/running into stars.
 	b. Die after 5 hits.
-	c. Score is show to the right
+	c. Score is shown to the right
 
-Note to Grader:
-	Hi grader!
+Design Decisions:
+	A timer was used to modulate the client framerate; when the timer ticks, the
+	Panels are invalidated to redraw. Movement commands are captured by a loop running
+	on its own thread. The thread captures currently pressed keys and sends them to the server.
+	The scoreboard draws the ships' health bars in the correct color (although white looks a bit grey).
+	The help button opens this file in a MessageBox. Timers are used for each ship to check if they are still
+	connected; each timer starts with 2 seconds of time, and is reset each time the client receives data about it.
+	If the timer reaches 0, the ship is considered to have been disconnected and removed (meaning its health bar and
+	score will no longer be drawn).

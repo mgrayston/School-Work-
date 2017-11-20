@@ -106,15 +106,25 @@ namespace Controller {
         /// <param name="ar"></param>
         private static void ReceiveCallback(IAsyncResult ar) {
             SocketState state = (SocketState)ar.AsyncState;
-            int bytesRead = state.Socket.EndReceive(ar);
+            try {
+                int bytesRead = state.Socket.EndReceive(ar);
 
-            // If the socket is still open
-            if (bytesRead > 0) {
-                string theMessage = Encoding.UTF8.GetString(state.Buffer, 0, bytesRead);
-                // Append the received data to the growable buffer.
-                // It may be an incomplete message, so we need to start building it up piece by piece
-                state.Builder.Append(theMessage);
-                state.CallMe(state);
+                // If the socket is still open
+                if (bytesRead > 0) {
+                    string theMessage = Encoding.UTF8.GetString(state.Buffer, 0, bytesRead);
+                    // Append the received data to the growable buffer.
+                    // It may be an incomplete message, so we need to start building it up piece by piece
+                    state.Builder.Append(theMessage);
+                    state.CallMe(state);
+                }
+            }
+            catch (Exception e) {
+                if (e is ObjectDisposedException) {
+                    return;
+                }
+                else {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
             }
         }
 
@@ -125,7 +135,12 @@ namespace Controller {
         /// <param name="data"></param>
         public static void Send(Socket socket, String data) {
             Byte[] toSend = Encoding.UTF8.GetBytes(data);
-            socket.BeginSend(toSend, 0, toSend.Length, SocketFlags.None, SendCallback, socket);
+            try {
+                socket.BeginSend(toSend, 0, toSend.Length, SocketFlags.None, SendCallback, socket);
+            }
+            catch (Exception e) {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -134,7 +149,17 @@ namespace Controller {
         /// <param name="ar"></param>
         private static void SendCallback(IAsyncResult ar) {
             Socket socket = (Socket)ar.AsyncState;
-            socket.EndSend(ar);
+            try {
+                socket.EndSend(ar);
+            }
+            catch (Exception e) {
+                if (e is ObjectDisposedException) {
+                    return;
+                }
+                else {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
+            }
         }
 
         /// <summary>

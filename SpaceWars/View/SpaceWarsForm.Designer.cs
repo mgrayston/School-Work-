@@ -1,7 +1,5 @@
-﻿namespace View
-{
-    partial class SpaceWarsForm
-    {
+﻿namespace View {
+    partial class SpaceWarsForm {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -11,10 +9,8 @@
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
+        protected override void Dispose(bool disposing) {
+            if (disposing && (components != null)) {
                 components.Dispose();
             }
             base.Dispose(disposing);
@@ -26,15 +22,14 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
-        {
+        private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
             this.serverText = new System.Windows.Forms.TextBox();
             this.serverLabel = new System.Windows.Forms.Label();
             this.nameLabel = new System.Windows.Forms.Label();
             this.nameText = new System.Windows.Forms.TextBox();
             this.connectButton = new System.Windows.Forms.Button();
-            this.timer = new System.Windows.Forms.Timer(this.components);
+            this.redrawTimer = new System.Windows.Forms.Timer(this.components);
             this.helpButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
@@ -81,10 +76,10 @@
             this.connectButton.UseVisualStyleBackColor = true;
             this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
-            // timer
+            // redrawTimer
             // 
-            this.timer.Interval = 7;
-            this.timer.Tick += new System.EventHandler(this.timer_Tick);
+            this.redrawTimer.Interval = 7;
+            this.redrawTimer.Tick += new System.EventHandler(this.Timer_Tick);
             // 
             // helpButton
             // 
@@ -92,9 +87,10 @@
             this.helpButton.Name = "helpButton";
             this.helpButton.Size = new System.Drawing.Size(75, 23);
             this.helpButton.TabIndex = 5;
+            this.helpButton.TabStop = false;
             this.helpButton.Text = "Help";
             this.helpButton.UseVisualStyleBackColor = true;
-            this.helpButton.Click += new System.EventHandler(this.helpButton_Click);
+            this.helpButton.Click += new System.EventHandler(this.HelpButton_Click);
             // 
             // SpaceWarsForm
             // 
@@ -109,7 +105,7 @@
             this.Controls.Add(this.serverText);
             this.Name = "SpaceWarsForm";
             this.Text = "Space Wars";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SpaceWarsForm_FormClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SpaceWarsForm_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -122,7 +118,7 @@
         private System.Windows.Forms.Label nameLabel;
         private System.Windows.Forms.TextBox nameText;
         private System.Windows.Forms.Button connectButton;
-        private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.Timer redrawTimer;
         private System.Windows.Forms.Button helpButton;
     }
 }
