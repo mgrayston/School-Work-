@@ -18,14 +18,14 @@ namespace Controller {
     /// </summary>
     public class SocketState {
         private Socket socket;
-        private int ID;
+        private int id;
         private byte[] buffer;
         private StringBuilder builder;
         private NetworkAction callMe;
 
         public SocketState(Socket s, int id, NetworkAction d) {
             socket = s;
-            ID = id;
+            this.id = id;
             callMe = d;
             buffer = new byte[1024];
             builder = new StringBuilder();
@@ -35,6 +35,18 @@ namespace Controller {
         public StringBuilder Builder { get => builder; }
         public byte[] Buffer { get => buffer; set => buffer = value; }
         public NetworkAction CallMe { get => callMe; set => callMe = value; }
+        public int ID { get => id; }
+    }
+    public class ConnectionState {
+        private NetworkAction callMe;
+        private TcpListener listener;
+
+        public ConnectionState(NetworkAction callMe) {
+            callMe = this.callMe;
+            listener = null;
+        }
+        public NetworkAction CallMe { get => callMe; set => callMe = value; }
+        public TcpListener Listener { get => listener; set => listener = value; }
     }
 
     /// <summary>
@@ -44,6 +56,24 @@ namespace Controller {
     /// </summary>
     public static class Network {
         public const int DEFAULT_PORT = 11000;
+        private static int numClients = 0;
+
+        public static void ServerAwaitingClientLoop(NetworkAction callMe) {
+            TcpListener listener = new TcpListener(IPAddress.Any, DEFAULT_PORT);
+            ConnectionState cs = new ConnectionState(callMe) {
+                Listener = listener
+            };
+            listener.BeginAcceptSocket(AcceptNewClient, cs);
+            Console.WriteLine("Server waiting for client");
+        }
+
+        private static void AcceptNewClient(IAsyncResult ar) {
+            ConnectionState cs = (ConnectionState)ar.AsyncState;
+            SocketState ss = new SocketState(cs.Listener.EndAcceptSocket(ar), numClients, null);
+            ++numClients;
+            cs.CallMe(ss);
+            cs.Listener.BeginAcceptSocket(AcceptNewClient, cs);
+        }
 
         /// <summary>
         /// Entrance point for connecting to a 
