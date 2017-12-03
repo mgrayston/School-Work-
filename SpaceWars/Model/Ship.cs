@@ -44,28 +44,36 @@ namespace Model {
         private int hp;
 
         /// <summary>
-        /// int representing the ship's score
+        /// Int representing the ship's score
         /// </summary>
         [JsonProperty]
         private int score;
+
+        /// <summary>
+        /// Used to store this Ship's velocity
+        /// </summary>
+        private Vector2D velocity;
+
+        public Ship() : this(-1, "") { }
 
         public Ship(int ID, string name) {
             this.ID = ID;
             this.name = name;
             this.loc = new Vector2D();
-            this.dir = new Vector2D();
+            this.dir = new Vector2D(0, 1);
             this.thrust = false;
             this.hp = 5;
             this.score = 0;
+            this.Velocity = new Vector2D(0, 0);
         }
 
         public int id { get => ID; }
         public string Name { get => name; }
-        public Vector2D Loc { get => loc; }
+        public Vector2D Loc { get => loc; set => loc = value; }
         public Vector2D Dir { get => dir; }
         public bool Thrust { get => thrust; }
         public int HP { get => hp; }
         public int Score { get => score; }
-
+        public Vector2D Velocity { get => velocity; set => velocity = value; }
     }
 }
