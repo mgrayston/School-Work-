@@ -85,13 +85,16 @@ namespace Server {
                     g.Normalize();
                     acceleration = acceleration + (g * star.Mass);
                 }
-
+                
                 ship.Velocity = ship.Velocity + acceleration;
                 ship.Loc = ship.Loc + ship.Velocity;
             }
 
             // Move projectiles
-            // TODO
+            foreach (Projectile projectile in world.GetProjectiles())
+            {
+                projectile.Loc = projectile.Loc + (projectile.Dir * projectileSpeed);
+            }
         }
     }
 }

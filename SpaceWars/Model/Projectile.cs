@@ -44,7 +44,7 @@ namespace Model {
 
         public int id { get => ID; }
         public int Owner { get => owner; }
-        public Vector2D Loc { get => loc; }
+        public Vector2D Loc { get => loc; set => loc = value; }
         public Vector2D Dir { get => dir; }
         public bool Alive { get => alive; }
     }

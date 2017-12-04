@@ -56,5 +56,21 @@ namespace Model {
         public IEnumerable<Star> GetStars() {
             return stars.Values;
         }
+
+        /// <summary>
+        /// Returns a ship object based on an ID
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        public Ship GetShip(int ID)
+        {
+            IEnumerable<Ship> ships = GetShips();
+            foreach(Ship s in ships)
+            {
+                if (s.id == ID)
+                    return s;
+            }
+            return null;
+        }
     }
 }
