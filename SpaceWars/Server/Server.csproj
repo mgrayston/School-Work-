@@ -62,5 +62,8 @@
       <Name>Vector2D</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="settings.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

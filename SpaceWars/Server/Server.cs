@@ -5,6 +5,9 @@ using System.Threading;
 using Controller;
 using Model;
 using SpaceWars;
+using System.Xml;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace Server {
     class Server {
@@ -17,16 +20,25 @@ namespace Server {
         private static int updateDelay;
         private static double engineStrength;
         private static int projectileSpeed;
+        private static int universeSize;
 
         static void Main(string[] args) {
-            // TODO read world settings and create new world and add stars etc.
-            world = new World(750);
-            clients = new List<SocketState>();
+            // Read world settings and create new world and add stars etc.
+            try
+            {
+                XDocument settings = XDocument.Load("..\\..\\SETTINGS.XML");
+                universeSize = Convert.ToInt32(settings.Descendants("UniverseSize").First().Value);
+                updateDelay = Convert.ToInt32(settings.Descendants("MSPerFrame").First().Value); //10;
+                engineStrength = Convert.ToDouble(settings.Descendants("EngineStrength").First().Value); //0.08;
+                projectileSpeed = Convert.ToInt32(settings.Descendants("ProjectileSpeed").First().Value); //15;
+            }
+            catch
+            {
+                Console.WriteLine("settings could not be read.");
+            }
 
-            // TODO these are defaults; could be changed in settings
-            updateDelay = 10;
-            engineStrength = 0.08;
-            projectileSpeed = 15;
+            world = new World(universeSize);
+            clients = new List<SocketState>();
 
             // Start a thread infinitely updating the world
             Thread worldUpdater = new Thread(start: UpdateWorld);
