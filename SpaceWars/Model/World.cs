@@ -58,6 +58,24 @@ namespace Model {
         }
 
         /// <summary>
+        /// Removes the ship with the specific ID from the world
+        /// </summary>
+        /// <param name="ID"></param>
+        public void RemoveShip(int ID)
+        {
+            ships.TryRemove(ID, out Ship s);
+        }
+
+        /// <summary>
+        /// Removes the projectile with the specific ID from the world
+        /// </summary>
+        /// <param name="ID"></param>
+        public void RemoveProjectile(int ID)
+        {
+            projectiles.TryRemove(ID, out Projectile proj);
+        }
+
+        /// <summary>
         /// Returns a ship object based on an ID
         /// </summary>
         /// <param name="ID"></param>

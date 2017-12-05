@@ -72,7 +72,7 @@ namespace Model {
         public Vector2D Loc { get => loc; set => loc = value; }
         public Vector2D Dir { get => dir; }
         public bool Thrust { get => thrust; }
-        public int HP { get => hp; }
+        public int HP { get => hp; set => hp = value; }
         public int Score { get => score; }
         public Vector2D Velocity { get => velocity; set => velocity = value; }
     }
