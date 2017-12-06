@@ -88,7 +88,12 @@ namespace Server {
 
             Network.Send(ss.Socket, ss.ID + "\n" + world.WorldSize + "\n");
             clients.Add(ss);
-            world.AddShip(new Ship(ss.ID, name, random.Next(((universeSize*2) + 1)) - universeSize, random.Next(((universeSize * 2) + 1)) - universeSize));
+            Ship newShip = new Ship(ss.ID, name, random.Next(((universeSize * 2) + 1)) - universeSize, random.Next(((universeSize * 2) + 1)) - universeSize);
+            //don't start ship in star's location
+            if (Math.Abs(newShip.Loc.GetX()) < starSize && Math.Abs(newShip.Loc.GetX()) < starSize)
+                newShip.Loc = new Vector2D(universeSize / 2, universeSize / 2);
+            world.AddShip(newShip);
+
         }
 
         private static void UpdateWorld() {
@@ -210,20 +215,20 @@ namespace Server {
             //X-coord Wraparound
             if(ship.Loc.GetX() - shipSize >= universeSize / 2) //wrap-around from right to left
             {
-                ship.Loc = new Vector2D(-1 * universeSize/2 - shipSize, ship.Loc.GetY());
+                ship.Loc = new Vector2D(-1 * universeSize/2 - shipSize +1, ship.Loc.GetY());
             }
-            else if (ship.Loc.GetX() + shipSize >= -1*universeSize / 2) //wrap-around from left to right
+            else if (ship.Loc.GetX() + shipSize <= -1*universeSize / 2) //wrap-around from left to right
             {
-                ship.Loc = new Vector2D(universeSize/2 + shipSize, ship.Loc.GetY());
+                ship.Loc = new Vector2D(universeSize/2 + shipSize -1, ship.Loc.GetY());
             }
             //Y-coord Wraparoud
             if (ship.Loc.GetY() - shipSize >= universeSize / 2) //wrap-around from bottom to top
             {
-                ship.Loc = new Vector2D(ship.Loc.GetX(), -1 * universeSize - shipSize);
+                ship.Loc = new Vector2D(ship.Loc.GetX(), -1 * universeSize/2 - shipSize +1);
             }
-            else if (ship.Loc.GetY() + shipSize >= -1 * universeSize / 2) //wrap-around from top to bottom
+            else if (ship.Loc.GetY() + shipSize <= -1 * universeSize / 2) //wrap-around from top to bottom
             {
-                ship.Loc = new Vector2D(ship.Loc.GetX(), universeSize + shipSize);
+                ship.Loc = new Vector2D(ship.Loc.GetX(), universeSize/2 + shipSize -1);
             }
         }
     }
