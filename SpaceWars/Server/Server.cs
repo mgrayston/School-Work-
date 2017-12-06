@@ -100,8 +100,6 @@ namespace Server {
 
                 // Move ships
                 foreach (Ship ship in world.GetShips()) {
-                    // wrap location
-                    ShipWrapAround(ship);
 
                     // Remove client if it has disconnected
                     if (!IsConnected(ship)) {
@@ -121,6 +119,8 @@ namespace Server {
 
                         ship.Velocity = ship.Velocity + acceleration;
                         ship.Loc = ship.Loc + ship.Velocity;
+                        // wrap location
+                        ShipWrapAround(ship);
                     }
                 }
 
