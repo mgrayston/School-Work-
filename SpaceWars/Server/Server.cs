@@ -100,7 +100,9 @@ namespace Server {
 
                 // Move ships
                 foreach (Ship ship in world.GetShips()) {
-                    // TODO wrap location
+                    // wrap location
+                    ShipWrapAround(ship);
+
                     // Remove client if it has disconnected
                     if (!IsConnected(ship)) {
                         clients.RemoveAt(ship.id);
@@ -196,6 +198,33 @@ namespace Server {
 
         private static bool IsConnected(Ship ship) {
             return clients[ship.id].Socket.Connected;
+        }
+
+        /// <summary>
+        /// Updates the coordinates of ship to wraparound the screen.
+        /// </summary>
+        /// <param name="ship"></param>
+        private static void ShipWrapAround(Ship ship)
+        {
+            //NOTE: ship size is added/subracted so that it fully disapears before wrapping to the other side.
+            //X-coord Wraparound
+            if(ship.Loc.GetX() - shipSize >= universeSize / 2) //wrap-around from right to left
+            {
+                ship.Loc = new Vector2D(-1 * universeSize/2 - shipSize, ship.Loc.GetY());
+            }
+            else if (ship.Loc.GetX() + shipSize >= -1*universeSize / 2) //wrap-around from left to right
+            {
+                ship.Loc = new Vector2D(universeSize/2 + shipSize, ship.Loc.GetY());
+            }
+            //Y-coord Wraparoud
+            if (ship.Loc.GetY() - shipSize >= universeSize / 2) //wrap-around from bottom to top
+            {
+                ship.Loc = new Vector2D(ship.Loc.GetX(), -1 * universeSize - shipSize);
+            }
+            else if (ship.Loc.GetY() + shipSize >= -1 * universeSize / 2) //wrap-around from top to bottom
+            {
+                ship.Loc = new Vector2D(ship.Loc.GetX(), universeSize + shipSize);
+            }
         }
     }
 }
