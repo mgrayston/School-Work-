@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Timers;
 
@@ -33,6 +34,10 @@ namespace Model {
             Ships.TryAdd(ship.id, ship);
         }
 
+        public void AddStar(Star star) {
+            Stars.TryAdd(star.id, star);
+        }
+
         /// <summary>
         /// Used to return an Enumerable list of Ships.
         /// </summary>
@@ -61,8 +66,7 @@ namespace Model {
         /// Removes the ship with the specific ID from the world
         /// </summary>
         /// <param name="ID"></param>
-        public void RemoveShip(int ID)
-        {
+        public void RemoveShip(int ID) {
             ships.TryRemove(ID, out Ship s);
         }
 
@@ -70,8 +74,7 @@ namespace Model {
         /// Removes the projectile with the specific ID from the world
         /// </summary>
         /// <param name="ID"></param>
-        public void RemoveProjectile(int ID)
-        {
+        public void RemoveProjectile(int ID) {
             projectiles.TryRemove(ID, out Projectile proj);
         }
 
@@ -80,15 +83,21 @@ namespace Model {
         /// </summary>
         /// <param name="ID"></param>
         /// <returns></returns>
-        public Ship GetShip(int ID)
-        {
+        private Ship GetShip(int ID) {
             IEnumerable<Ship> ships = GetShips();
-            foreach(Ship s in ships)
-            {
+            foreach (Ship s in ships) {
                 if (s.id == ID)
                     return s;
             }
             return null;
+        }
+
+        public void AddPoint(int shipID) {
+            ships[shipID].Score++;
+        }
+
+        public string GetName(int id) {
+            return GetShip(id).Name;
         }
     }
 }

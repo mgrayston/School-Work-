@@ -34,11 +34,13 @@ namespace Model {
         [JsonProperty]
         private int owner;
 
-        public Projectile(int ID, int owner) {
+        public Projectile() : this(-1, -1, 0, 0, 0, 0) { }
+
+        public Projectile(int ID, int owner, int locX, int locY, double dirX, double dirY) {
             this.ID = ID;
             this.owner = owner;
-            this.loc = new Vector2D();
-            this.dir = new Vector2D();
+            this.loc = new Vector2D(locX, locY);
+            this.dir = new Vector2D(dirX, dirY);
             this.alive = true;
         }
 
@@ -46,6 +48,6 @@ namespace Model {
         public int Owner { get => owner; }
         public Vector2D Loc { get => loc; set => loc = value; }
         public Vector2D Dir { get => dir; }
-        public bool Alive { get => alive; }
+        public bool Alive { get => alive; set => alive = value; }
     }
 }

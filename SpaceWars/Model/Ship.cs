@@ -54,12 +54,12 @@ namespace Model {
         /// </summary>
         private Vector2D velocity;
 
-        public Ship() : this(-1, "") { }
+        public Ship() : this(-1, "", 0, 0) { }
 
-        public Ship(int ID, string name) {
+        public Ship(int ID, string name, int x, int y) {
             this.ID = ID;
             this.name = name;
-            this.loc = new Vector2D();
+            this.loc = new Vector2D(x, y);
             this.dir = new Vector2D(0, 1);
             this.thrust = false;
             this.hp = 5;
@@ -73,7 +73,7 @@ namespace Model {
         public Vector2D Dir { get => dir; }
         public bool Thrust { get => thrust; }
         public int HP { get => hp; set => hp = value; }
-        public int Score { get => score; }
+        public int Score { get => score; set => score = value; }
         public Vector2D Velocity { get => velocity; set => velocity = value; }
     }
 }

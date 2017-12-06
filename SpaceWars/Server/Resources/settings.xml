@@ -1,0 +1,16 @@
+﻿<SpaceSettings>
+  <UniverseSize>750</UniverseSize>
+  <MSPerFrame>5000</MSPerFrame>
+  <EngineStrength>0.08</EngineStrength>
+  <ProjectileSpeed>15</ProjectileSpeed>
+  <ShotDelay>6</ShotDelay><!--This is in framse-->
+  <RespawnRate>300</RespawnRate><!--This is in frames-->
+  <StarSize>35</StarSize>
+  <ShipSize>20</ShipSize>
+
+  <Star>
+    <x>0</x>
+    <y>0</y>
+    <mass>0.01</mass>
+  </Star>
+</SpaceSettings>

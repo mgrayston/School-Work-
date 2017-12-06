@@ -42,7 +42,7 @@ namespace Controller {
         private TcpListener listener;
 
         public ConnectionState(NetworkAction callMe) {
-            callMe = this.callMe;
+            this.callMe = callMe;
             listener = null;
         }
         public NetworkAction CallMe { get => callMe; set => callMe = value; }
@@ -63,6 +63,7 @@ namespace Controller {
             ConnectionState cs = new ConnectionState(callMe) {
                 Listener = listener
             };
+            listener.Start();
             listener.BeginAcceptSocket(AcceptNewClient, cs);
             Console.WriteLine("Server waiting for client");
         }

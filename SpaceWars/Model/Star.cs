@@ -23,9 +23,11 @@ namespace Model {
         [JsonProperty]
         private double mass;
 
-        public Star(int ID, double mass) {
+        public Star() : this(-1, 0, 0, 0) { }
+
+        public Star(int ID, double mass, int x, int y) {
             this.ID = ID;
-            this.loc = new Vector2D();
+            this.loc = new Vector2D(x, y);
             this.mass = mass;
         }
 
