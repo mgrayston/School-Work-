@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Diagnostics;
+using Newtonsoft.Json;
 using SpaceWars;
 
 namespace Model {
@@ -54,26 +55,56 @@ namespace Model {
         /// </summary>
         private Vector2D velocity;
 
+        private bool connected;
+
+        private Stopwatch canFire;
+
+        /// <summary>
+        /// Field representing whether this ship is trying to turn or not; 1 signifies right turn, 0 no turn, and -1 left turn.
+        /// </summary>
+        private int toTurn;
+
         public Ship() : this(-1, "", 0, 0) { }
 
         public Ship(int ID, string name, int x, int y) {
             this.ID = ID;
             this.name = name;
             this.loc = new Vector2D(x, y);
-            this.dir = new Vector2D(0, 1);
+            this.dir = new Vector2D(0, -1);
             this.thrust = false;
             this.hp = 5;
             this.score = 0;
             this.Velocity = new Vector2D(0, 0);
+            ToTurn = 0;
+            connected = true;
+            canFire = new Stopwatch();
+            canFire.Start();
+        }
+
+        public void Respawn() {
+            dir = new Vector2D(0, -1);
+            thrust = false;
+            velocity = new Vector2D(0, 0);
+            HP = 5;
+        }
+
+        public bool Fire(int shotDelay) {
+            if (canFire.ElapsedMilliseconds > shotDelay) {
+                canFire.Restart();
+                return true;
+            }
+            return false;
         }
 
         public int id { get => ID; }
         public string Name { get => name; }
         public Vector2D Loc { get => loc; set => loc = value; }
         public Vector2D Dir { get => dir; }
-        public bool Thrust { get => thrust; }
+        public bool Thrust { get => thrust; set => thrust = value; }
         public int HP { get => hp; set => hp = value; }
         public int Score { get => score; set => score = value; }
         public Vector2D Velocity { get => velocity; set => velocity = value; }
+        public bool Connected { get => connected; set => connected = value; }
+        public int ToTurn { get => toTurn; set => toTurn = value; }
     }
 }

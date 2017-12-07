@@ -9,26 +9,28 @@ using System.Xml.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Server.Properties;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Server {
-    // TODO add respawn
     class Server {
         // This will function as the default milliseconds between frames
         private static List<SocketState> clients;
         private static World world;
         private static Stopwatch updateStopwatch;
-        private static StringBuilder worldString;
+        private static StringBuilder worldStringBuilder;
         private static Random random;
 
         // Update values
         private static int universeSize;
-        private static int updateDelay;
+        private static int msPerFrame;
         private static double engineStrength;
         private static int projectileSpeed;
         private static int shotDelay;
         private static int respawnRate;
         private static int starSize;
         private static int shipSize;
+        private static double turningRate;
 
         static void Main(string[] args) {
             // Read world settings and create new world and add stars etc.
@@ -37,13 +39,14 @@ namespace Server {
                 XElement root = settings.Root;
 
                 universeSize = Convert.ToInt32(root.Element("UniverseSize").Value); // 750
-                updateDelay = Convert.ToInt32(root.Element("MSPerFrame").Value); // 16
+                msPerFrame = Convert.ToInt32(root.Element("MSPerFrame").Value); // 16
                 engineStrength = Convert.ToDouble(root.Element("EngineStrength").Value); // 0.08
                 projectileSpeed = Convert.ToInt32(root.Element("ProjectileSpeed").Value); // 15
                 shotDelay = Convert.ToInt32(root.Element("ShotDelay").Value); // 6
                 respawnRate = Convert.ToInt32(root.Element("RespawnRate").Value);
                 starSize = Convert.ToInt32(root.Element("StarSize").Value); // 35
                 shipSize = Convert.ToInt32(root.Element("ShipSize").Value); // 20
+                turningRate = Convert.ToDouble(root.Element("TurningRate").Value); // 2
 
                 world = new World(universeSize);
 
@@ -58,7 +61,7 @@ namespace Server {
             }
 
             clients = new List<SocketState>();
-            worldString = new StringBuilder();
+            worldStringBuilder = new StringBuilder();
             updateStopwatch = new Stopwatch();
             random = new Random();
 
@@ -88,72 +91,157 @@ namespace Server {
 
             Network.Send(ss.Socket, ss.ID + "\n" + world.WorldSize + "\n");
             clients.Add(ss);
-            Ship newShip = new Ship(ss.ID, name, random.Next(((universeSize * 2) + 1)) - universeSize, random.Next(((universeSize * 2) + 1)) - universeSize);
-            //don't start ship in star's location
-            if (Math.Abs(newShip.Loc.GetX()) < starSize && Math.Abs(newShip.Loc.GetX()) < starSize)
-                newShip.Loc = new Vector2D(universeSize / 2, universeSize / 2);
+            Ship newShip = new Ship(ss.ID, name, random.Next(universeSize + 1) - (universeSize / 2), random.Next(universeSize + 1) - (universeSize / 2));
+            // Don't start ship in star's location
+            while (Math.Abs(newShip.Loc.GetX()) < starSize && Math.Abs(newShip.Loc.GetX()) < starSize) {
+                newShip.Loc = new Vector2D(random.Next(universeSize + 1) - (universeSize / 2), random.Next(universeSize + 1) - (universeSize / 2));
+            }
             world.AddShip(newShip);
 
+            ss.CallMe = ReceiveMoveRequest;
+            Network.GetData(ss);
+        }
+
+        private static void ReceiveMoveRequest(SocketState ss) {
+            String request = ss.Builder.ToString();
+            string[] parts = Regex.Split(request, @"(?<=[\n])");
+
+            bool thrust = false;
+            bool fire = false;
+            int r = 0;
+            int l = 0;
+
+            foreach (string part in parts) {
+                if (part.Length == 0) {
+                    continue;
+                }
+                if (part[part.Length - 1] != '\n') {
+                    break;
+                }
+
+                if (part.Contains("T")) {
+                    thrust = true;
+                }
+                if (part.Contains("F")) {
+                    fire = true;
+                }
+                if (part.Contains("R")) {
+                    r++;
+                }
+                if (part.Contains("L")) {
+                    l++;
+                }
+
+                ss.Builder.Remove(0, part.Length);
+            }
+
+            Ship ship = world.GetShip(ss.ID);
+            if (ship.HP > 0) {
+                if (thrust) {
+                    ship.Thrust = true;
+                }
+                else {
+                    ship.Thrust = false;
+                }
+                if (fire) {
+                    if (ship.Fire(shotDelay * msPerFrame)) {
+                        world.AddProjectile(ship.id, ship.Loc.GetX(), ship.Loc.GetY(), ship.Dir.GetX(), ship.Dir.GetY());
+                    }
+                }
+                if (r > l) {
+                    ship.ToTurn = 1;
+                }
+                else if (l > r) {
+                    ship.ToTurn = -1;
+                }
+                else {
+                    ship.ToTurn = 0;
+                }
+            }
+
+            Network.GetData(ss);
         }
 
         private static void UpdateWorld() {
             while (true) {
                 // Spin until delay is reached
-                while (updateStopwatch.ElapsedMilliseconds < updateDelay) { }
+                while (updateStopwatch.ElapsedMilliseconds < msPerFrame) { }
 
                 updateStopwatch.Restart();
 
-                // Move ships
-                foreach (Ship ship in world.GetShips()) {
+                lock (world) {
+                    // Move ships
+                    foreach (Ship ship in world.GetShips()) {
+                        // Only update connected players
+                        if (IsConnected(ship.id)) {
+                            if (ship.ToTurn == 1) {
+                                ship.Dir.Rotate(turningRate);
+                            }
+                            if (ship.ToTurn == -1) {
+                                ship.Dir.Rotate(-turningRate);
+                            }
 
-                    // Remove client if it has disconnected
-                    if (!IsConnected(ship)) {
-                        clients.RemoveAt(ship.id);
-                        Console.WriteLine("Client disconnected: " + ship.Name);
-                    }
-                    else {
-                        Vector2D acceleration = new Vector2D(0, 0);
-                        Vector2D thrust = new Vector2D(ship.Dir);
-                        acceleration = acceleration + (thrust * engineStrength);
+                            Vector2D acceleration = new Vector2D(0, 0);
+                            Vector2D thrust = new Vector2D(ship.Dir);
+                            if (ship.Thrust) {
+                                acceleration = acceleration + (thrust * engineStrength);
+                            }
 
-                        foreach (Star star in world.GetStars()) {
-                            Vector2D g = star.Loc - ship.Loc;
-                            g.Normalize();
-                            acceleration = acceleration + (g * star.Mass);
+                            foreach (Star star in world.GetStars()) {
+                                Vector2D g = star.Loc - ship.Loc;
+                                g.Normalize();
+                                acceleration = acceleration + (g * star.Mass);
+                            }
+
+                            ship.Velocity = ship.Velocity + acceleration;
+                            ship.Loc = ship.Loc + ship.Velocity;
+
+                            // Wrap location
+                            ShipWrapAround(ship);
                         }
+                        else {
+                            if (ship.Connected) {
+                                Console.WriteLine("Client disconnected: " + ship.Name);
+                                ship.Connected = false;
+                            }
+                        }
+                    }
 
-                        ship.Velocity = ship.Velocity + acceleration;
-                        ship.Loc = ship.Loc + ship.Velocity;
-                        // wrap location
-                        ShipWrapAround(ship);
+                    // Move projectiles
+                    foreach (Projectile projectile in world.GetProjectiles()) {
+                        if (projectile.Alive) {
+                            projectile.Loc = projectile.Loc + (projectile.Dir * projectileSpeed);
+                        }
+                        else {
+                            world.RemoveProjectile(projectile.id);
+                        }
+                    }
+
+                    // Check for collisions
+                    CollisionChecks();
+
+                    // Generate world string
+                    worldStringBuilder.Clear();
+                    foreach (Ship ship in world.GetShips()) {
+                        if (IsConnected(ship.id)) {
+                            worldStringBuilder.Append(JsonConvert.SerializeObject(ship) + "\n");
+                        }
+                    }
+                    foreach (Projectile projectile in world.GetProjectiles()) {
+                        worldStringBuilder.Append(JsonConvert.SerializeObject(projectile) + "\n");
+                    }
+                    foreach (Star star in world.GetStars()) {
+                        worldStringBuilder.Append(JsonConvert.SerializeObject(star) + "\n");
                     }
                 }
 
-                // Move projectiles
-                foreach (Projectile projectile in world.GetProjectiles()) {
-                    projectile.Loc = projectile.Loc + (projectile.Dir * projectileSpeed);
-                }
-
-                // Check for collisions
-                CollisionChecks();
-
-                // Generate world string
-                worldString.Clear();
-                foreach (Ship ship in world.GetShips()) {
-                    if (IsConnected(ship)) {
-                        worldString.Append(JsonConvert.SerializeObject(ship) + "\n");
-                    }
-                }
-                foreach (Projectile projectile in world.GetProjectiles()) {
-                    worldString.Append(JsonConvert.SerializeObject(projectile) + "\n");
-                }
-                foreach (Star star in world.GetStars()) {
-                    worldString.Append(JsonConvert.SerializeObject(star) + "\n");
-                }
+                String worldString = worldStringBuilder.ToString();
 
                 // Send updated world to all clients
                 foreach (SocketState client in clients) {
-                    Network.Send(client.Socket, worldString.ToString());
+                    if (client.Socket.Connected) {
+                        Network.Send(client.Socket, worldString);
+                    }
                 }
             }
         }
@@ -161,27 +249,27 @@ namespace Server {
         private static void CollisionChecks() {
             // Only check alive ships
             foreach (Ship ship in world.GetShips()) {
-                if (IsConnected(ship)) {
+                if (IsConnected(ship.id)) {
                     if (ship.HP > 0) {
-                        double shipX = ship.Loc.GetX();
-                        double shipY = ship.Loc.GetY();
-
                         // Check for Collisions of Stars and ships
                         foreach (Star star in world.GetStars()) {
-                            double starX = star.Loc.GetX();
-                            double starY = star.Loc.GetY();
-
-                            if (Math.Abs(starX - ship.Loc.GetX()) <= starSize || Math.Abs(starY - ship.Loc.GetY()) <= starSize) {
+                            if ((star.Loc - ship.Loc).Length() < starSize) {
                                 ship.HP = 0;
+                                new Thread(() => Respawn(ship)).Start();
                             }
                         }
 
                         // Check for Collisions of projectiles and ships
                         foreach (Projectile projectile in world.GetProjectiles()) {
-                            if (Math.Abs(shipX - projectile.Loc.GetX()) <= shipSize || Math.Abs(shipY - projectile.Loc.GetY()) <= shipSize) {
-                                ship.HP = 0;
-                                projectile.Alive = false;
-                                world.AddPoint(projectile.Owner);
+                            if (projectile.Owner != ship.id) {
+                                if ((ship.Loc - projectile.Loc).Length() < shipSize) {
+                                    ship.HP--;
+                                    projectile.Alive = false;
+                                    if (ship.HP == 0) {
+                                        world.AddPoint(projectile.Owner);
+                                        new Thread(() => Respawn(ship)).Start();
+                                    }
+                                }
                             }
                         }
                     }
@@ -190,45 +278,50 @@ namespace Server {
 
             // Check for Collisions of projectiles and stars
             foreach (Star star in world.GetStars()) {
-                double starX = star.Loc.GetX();
-                double starY = star.Loc.GetY();
-
                 foreach (Projectile projectile in world.GetProjectiles()) {
-                    if (Math.Abs(starX - projectile.Loc.GetX()) <= starSize || Math.Abs(starY - projectile.Loc.GetY()) <= starSize) {
+                    if ((star.Loc - projectile.Loc).Length() < starSize) {
                         projectile.Alive = false;
                     }
                 }
             }
         }
 
-        private static bool IsConnected(Ship ship) {
-            return clients[ship.id].Socket.Connected;
+        private static void Respawn(Ship ship) {
+            Thread.Sleep(respawnRate * msPerFrame);
+            ship.Loc = new Vector2D(random.Next(universeSize + 1) - (universeSize / 2), random.Next(universeSize + 1) - (universeSize / 2));
+            while (Math.Abs(ship.Loc.GetX()) < starSize && Math.Abs(ship.Loc.GetX()) < starSize) {
+                ship.Loc = new Vector2D(random.Next(universeSize + 1) - (universeSize / 2), random.Next(universeSize + 1) - (universeSize / 2));
+            }
+            ship.Respawn();
+        }
+
+        private static bool IsConnected(int id) {
+            if (clients[id] != null) {
+                return clients[id].Socket.Connected;
+            }
+            return false;
         }
 
         /// <summary>
         /// Updates the coordinates of ship to wraparound the screen.
         /// </summary>
         /// <param name="ship"></param>
-        private static void ShipWrapAround(Ship ship)
-        {
-            //NOTE: ship size is added/subracted so that it fully disapears before wrapping to the other side.
-            //X-coord Wraparound
-            if(ship.Loc.GetX() - shipSize >= universeSize / 2) //wrap-around from right to left
-            {
-                ship.Loc = new Vector2D(-1 * universeSize/2 - shipSize +1, ship.Loc.GetY());
+        private static void ShipWrapAround(Ship ship) {
+            // NOTE: ship size is added/subracted so that it fully disapears before wrapping to the other side.
+            // X-coord wrap-around
+            if (ship.Loc.GetX() - shipSize >= (universeSize / 2)) { // Wrap around from right to left
+                ship.Loc = new Vector2D(-(universeSize / 2) - shipSize + 1, ship.Loc.GetY());
             }
-            else if (ship.Loc.GetX() + shipSize <= -1*universeSize / 2) //wrap-around from left to right
-            {
-                ship.Loc = new Vector2D(universeSize/2 + shipSize -1, ship.Loc.GetY());
+            else if (ship.Loc.GetX() + shipSize <= -(universeSize / 2)) { // Wrap around from left to right
+                ship.Loc = new Vector2D((universeSize / 2) + shipSize - 1, ship.Loc.GetY());
             }
-            //Y-coord Wraparoud
-            if (ship.Loc.GetY() - shipSize >= universeSize / 2) //wrap-around from bottom to top
-            {
-                ship.Loc = new Vector2D(ship.Loc.GetX(), -1 * universeSize/2 - shipSize +1);
+
+            // Y-coord wrap-around
+            if (ship.Loc.GetY() - shipSize >= (universeSize / 2)) { // Wrap around from bottom to top
+                ship.Loc = new Vector2D(ship.Loc.GetX(), -(universeSize / 2) - shipSize + 1);
             }
-            else if (ship.Loc.GetY() + shipSize <= -1 * universeSize / 2) //wrap-around from top to bottom
-            {
-                ship.Loc = new Vector2D(ship.Loc.GetX(), universeSize/2 + shipSize -1);
+            else if (ship.Loc.GetY() + shipSize <= -(universeSize / 2)) { // Wrap around from top to bottom
+                ship.Loc = new Vector2D(ship.Loc.GetX(), (universeSize / 2) + shipSize - 1);
             }
         }
     }

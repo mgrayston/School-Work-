@@ -7,6 +7,7 @@ namespace Model {
     public class World {
         private int id;
         private int worldSize;
+        private int projectileId;
 
         // Concurrent dictionaries are thread safe
         private ConcurrentDictionary<int, Ship> ships;
@@ -21,6 +22,7 @@ namespace Model {
             timers = new ConcurrentDictionary<int, Timer>();
             this.id = id;
             this.worldSize = worldSize;
+            projectileId = 0;
         }
 
         public int Id { get => id; set => id = value; }
@@ -75,7 +77,7 @@ namespace Model {
         /// </summary>
         /// <param name="ID"></param>
         public void RemoveProjectile(int ID) {
-            projectiles.TryRemove(ID, out Projectile proj);
+            projectiles.TryRemove(ID, out Projectile dispose);
         }
 
         /// <summary>
@@ -83,13 +85,15 @@ namespace Model {
         /// </summary>
         /// <param name="ID"></param>
         /// <returns></returns>
-        private Ship GetShip(int ID) {
-            IEnumerable<Ship> ships = GetShips();
-            foreach (Ship s in ships) {
-                if (s.id == ID)
-                    return s;
+        public Ship GetShip(int ID) {
+            if (ships[ID] != null) {
+                return ships[ID];
             }
             return null;
+        }
+
+        public void AddProjectile(int ownerId, double locX, double locY, double dirX, double dirY) {
+            projectiles[projectileId] = new Projectile(projectileId++, ownerId, (int)locX, (int)locY, dirX, dirY);
         }
 
         public void AddPoint(int shipID) {

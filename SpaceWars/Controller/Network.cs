@@ -45,6 +45,7 @@ namespace Controller {
             this.callMe = callMe;
             listener = null;
         }
+
         public NetworkAction CallMe { get => callMe; set => callMe = value; }
         public TcpListener Listener { get => listener; set => listener = value; }
     }
