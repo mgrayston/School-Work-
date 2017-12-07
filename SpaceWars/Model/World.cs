@@ -19,7 +19,7 @@ namespace Model {
             stars = new ConcurrentDictionary<int, Star>();
             projectiles = new ConcurrentDictionary<int, Projectile>();
             timers = new ConcurrentDictionary<int, Timer>();
-            this.Id = id;
+            this.id = id;
             this.worldSize = worldSize;
         }
 
