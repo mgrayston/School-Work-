@@ -31,3 +31,8 @@ Design Decisions:
 	connected; each timer starts with 2 seconds of time, and is reset each time the client receives data about it.
 	If the timer reaches 0, the ship is considered to have been disconnected and removed (meaning its health bar and
 	score will no longer be drawn).
+
+	Unit Testing was performed on the Model section of this assignment.  Due to the separation of concerns in the
+	structure of the code, this is a fairly effective means of testing the entire assignment. The modeling of the stars,
+	ships, projectiles, and world are the structure of the assignment that contain a lot of the assignments fuctionality. 
+	There are certain aspects that remaini untested, but would be more visible to the user when playing the game.

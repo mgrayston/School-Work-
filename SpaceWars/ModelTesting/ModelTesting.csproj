@@ -48,7 +48,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="WorldTesting.cs" />
+    <Compile Include="ModelTesting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +58,10 @@
     <ProjectReference Include="..\Model\Model.csproj">
       <Project>{6291BF83-225C-4B44-AB6A-81F91337FCB5}</Project>
       <Name>Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Vector2D\Vector2D.csproj">
+      <Project>{EBEE51D3-9ECE-43A6-909A-A80FCC139734}</Project>
+      <Name>Vector2D</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
