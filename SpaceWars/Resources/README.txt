@@ -22,6 +22,10 @@ Instructions:
 	b. Die after 5 hits.
 	c. Score is shown to the right
 
+4. Additional Mode
+	An additional mode in which all stars move randomly was added. This mode can be turned on by setting the Mode tag in 
+	the settings file to MovingStars. The normal, default mode, is Default.
+
 Design Decisions:
 	A timer was used to modulate the client framerate; when the timer ticks, the
 	Panels are invalidated to redraw. Movement commands are captured by a loop running

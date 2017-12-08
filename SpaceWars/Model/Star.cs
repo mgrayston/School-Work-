@@ -23,16 +23,20 @@ namespace Model {
         [JsonProperty]
         private double mass;
 
+        private Vector2D velocity;
+
         public Star() : this(-1, 0, 0, 0) { }
 
         public Star(int ID, double mass, int x, int y) {
             this.ID = ID;
             this.loc = new Vector2D(x, y);
             this.mass = mass;
+            Velocity = new Vector2D(0, 0);
         }
 
         public int id { get => ID; }
-        public Vector2D Loc { get => loc; }
+        public Vector2D Loc { get => loc; set => loc = value; }
         public double Mass { get => mass; }
+        public Vector2D Velocity { get => velocity; set => velocity = value; }
     }
 }
