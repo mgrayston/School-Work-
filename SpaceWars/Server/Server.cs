@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Server.Properties;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Data.SqlClient;
 
 namespace Server {
     class Server {
@@ -33,6 +34,28 @@ namespace Server {
         private static double turningRate;
         private static string mode;
 
+        //PS9 Database Values
+        /// <summary>
+        /// The connection string.
+        /// Your uID login name serves as both your database name and your uid
+        /// </summary>
+        private const string connectionString = "server=atr.eng.utah.edu;" +
+          "database=Library;" +
+          "uid=u0777607;" +
+          "password=changeme";
+        /// <summary>
+        /// used to track of the number of projectiles shot by each player
+        /// </summary>
+        private static Dictionary<String, int> projectileCount;
+        /// <summary>
+        /// used to track of the number of hits shot by each player
+        /// </summary>
+        private static Dictionary<String, int> hits;
+        /// <summary>
+        /// used to track of the score of each player
+        /// </summary>
+        private static Dictionary<String, int> scores;
+
         static void Main(string[] args) {
             // Read world settings and create new world and add stars etc.
             try {
@@ -50,7 +73,7 @@ namespace Server {
                 turningRate = Convert.ToDouble(root.Element("TurningRate").Value); // 2
                 mode = root.Element("Mode").Value;
                 Console.WriteLine(root.Element("Mode").Value);
-
+                projectileCount = new Dictionary<string, int>();
                 world = new World(universeSize);
 
                 int starId = 0;
@@ -98,6 +121,8 @@ namespace Server {
             string name = ss.Builder.ToString();
             name = name.Remove(name.Length - 1);
             Console.WriteLine("Received name: " + name);
+            //TODO - add player name and game ID to table
+            projectileCount.Add(name, 0);
 
             Network.Send(ss.Socket, ss.ID + "\n" + world.WorldSize + "\n");
             clients.Add(ss);
@@ -161,6 +186,8 @@ namespace Server {
                     if (fire) {
                         if (ship.Fire(shotDelay * msPerFrame)) {
                             world.AddProjectile(ship.id, ship.Loc.GetX(), ship.Loc.GetY(), ship.Dir.GetX(), ship.Dir.GetY());
+                            //TODO - Update accuracy (hits/projectile count)
+                            projectileCount[ship.Name]++;
                         }
                     }
                     if (r > l) {
@@ -310,9 +337,15 @@ namespace Server {
                                 if ((ship.Loc - projectile.Loc).Length() < shipSize) {
                                     ship.HP--;
                                     projectile.Alive = false;
+                                    //TODO - Update accuracy (hits/projectile count)                                    
+                                    Ship shooter = world.GetShip(projectile.Owner);
+                                    hits[shooter.Name]++;
+
                                     if (ship.HP == 0) {
                                         world.AddPoint(projectile.Owner);
                                         new Thread(() => Respawn(ship)).Start();
+                                        //TODO - Update max score
+                                        scores[shooter.Name]++;
                                     }
                                 }
                             }
@@ -403,6 +436,34 @@ namespace Server {
                     else if (star.Loc.GetY() + starSize <= -(universeSize / 2)) { // Wrap around from top to bottom
                         star.Loc = new Vector2D(star.Loc.GetX(), (universeSize / 2) + starSize - 10);
                     }
+                }
+            }
+        }
+        public static void AllPlayers(string playerName)
+        {
+            // Connect to the DB
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    // Open a connection
+                    conn.Open();
+                    // Create a command
+                    SqlCommand command = conn.CreateCommand();
+                    command.CommandText = "select CardNum, Name from Patrons"; // todo change this
+                    // Execute the command and cycle through the DataReader object
+                    command.Ex
+                    //using (SqlDataReader reader = command.ExecuteReader())
+                    //{
+                    //    while (reader.Read())
+                    //    {
+                    //        Console.WriteLine(reader["CardNum"] + " " + reader["Name"]);
+                    //    }
+                    //}
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
                 }
             }
         }
