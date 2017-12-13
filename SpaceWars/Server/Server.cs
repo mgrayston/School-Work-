@@ -42,7 +42,7 @@ namespace Server {
         private const string connectionString = "server=atr.eng.utah.edu;" +
           "database=Library;" +
           "uid=u0777607;" +
-          "password=changeme";
+          "password=AoiKitsune";
         /// <summary>
         /// used to track of the number of projectiles shot by each player
         /// </summary>
@@ -439,33 +439,6 @@ namespace Server {
                 }
             }
         }
-        public static void AllPlayers(string playerName)
-        {
-            // Connect to the DB
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                try
-                {
-                    // Open a connection
-                    conn.Open();
-                    // Create a command
-                    SqlCommand command = conn.CreateCommand();
-                    command.CommandText = "select CardNum, Name from Patrons"; // todo change this
-                    // Execute the command and cycle through the DataReader object
-                    command.Ex
-                    //using (SqlDataReader reader = command.ExecuteReader())
-                    //{
-                    //    while (reader.Read())
-                    //    {
-                    //        Console.WriteLine(reader["CardNum"] + " " + reader["Name"]);
-                    //    }
-                    //}
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-            }
-        }
+        //add methods here
     }
 }
