@@ -41,6 +41,14 @@ Design Decisions:
 	ships, projectiles, and world are the structure of the assignment that contain a lot of the assignments fuctionality. 
 	There are certain aspects that remaini untested, but would be more visible to the user when playing the game.
 
+	Database:
+	Table1: StarwarsGames
+		Contains unique game ID and duration
+	Table2: StarwarsPlayers
+		Contains unique player id, name, game id, score and accuracy.
+
+	The game ID is what links these two tables together.
+
 	Info is written to the a database to record player score, accuracy and game duration. 
 	To close the server, thus ending a game, the word "close" must be entered.  We could not figure out how to get the
 	closing of the console application to terminate the program correctly.
