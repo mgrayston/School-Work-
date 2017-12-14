@@ -445,7 +445,7 @@ namespace Server {
             foreach(Ship s in world.GetShips())
             {
                 if(s.ShotsFired !=0)
-                    s.Accuracy = s.Hits / s.ShotsFired;
+                    s.Accuracy = (100*s.Hits) / s.ShotsFired;
                 else
                 {
                     s.Accuracy = 0;
