@@ -40,3 +40,7 @@ Design Decisions:
 	structure of the code, this is a fairly effective means of testing the entire assignment. The modeling of the stars,
 	ships, projectiles, and world are the structure of the assignment that contain a lot of the assignments fuctionality. 
 	There are certain aspects that remaini untested, but would be more visible to the user when playing the game.
+
+	Info is written to the a database to record player score, accuracy and game duration. 
+	To close the server, thus ending a game, the word "close" must be entered.  We could not figure out how to get the
+	closing of the console application to terminate the program correctly.

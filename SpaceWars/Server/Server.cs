@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Server.Properties;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
 
 namespace Server {
     class Server {
@@ -40,23 +40,16 @@ namespace Server {
         /// Your uID login name serves as both your database name and your uid
         /// </summary>
         private const string connectionString = "server=atr.eng.utah.edu;" +
-          "database=Library;" +
-          "uid=u0777607;" +
+          "database=cs3500_u0777607;" +
+          "uid=cs3500_u0777607;" +
           "password=AoiKitsune";
-        /// <summary>
-        /// used to track of the number of projectiles shot by each player
-        /// </summary>
-        private static Dictionary<String, int> projectileCount;
-        /// <summary>
-        /// used to track of the number of hits shot by each player
-        /// </summary>
-        private static Dictionary<String, int> hits;
-        /// <summary>
-        /// used to track of the score of each player
-        /// </summary>
-        private static Dictionary<String, int> scores;
+
+        private static DateTime startTime;
+        private static DateTime endTime;
+        private static double duration;
 
         static void Main(string[] args) {
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
             // Read world settings and create new world and add stars etc.
             try {
                 XDocument settings = XDocument.Parse(Resources.settings);
@@ -73,7 +66,6 @@ namespace Server {
                 turningRate = Convert.ToDouble(root.Element("TurningRate").Value); // 2
                 mode = root.Element("Mode").Value;
                 Console.WriteLine(root.Element("Mode").Value);
-                projectileCount = new Dictionary<string, int>();
                 world = new World(universeSize);
 
                 int starId = 0;
@@ -95,12 +87,25 @@ namespace Server {
             Thread worldUpdater = new Thread(start: UpdateWorld);
             updateStopwatch.Start();
             worldUpdater.Start();
+            startTime = DateTime.Now;
 
             // Begin receiving clients
             Network.ServerAwaitingClientLoop(HandleNewClient);
 
             // Keep Main running until "close" is enterd into the terminal
-            while (!Console.ReadLine().ToLower().Equals("close")) { }
+            Console.WriteLine("Enter 'close' to terminate application: ");
+            while (!Console.ReadLine().ToLower().Equals("close"))
+            {
+                
+            }
+            endTime = DateTime.Now;
+            TimeSpan gameDuration = endTime - startTime;
+            duration = gameDuration.TotalMinutes;
+
+            //TODO - update database here
+            int gameID = WriteGameData();
+            WritePlayerData(gameID);
+            Environment.Exit(0);
         }
 
         /// <summary>
@@ -121,8 +126,6 @@ namespace Server {
             string name = ss.Builder.ToString();
             name = name.Remove(name.Length - 1);
             Console.WriteLine("Received name: " + name);
-            //TODO - add player name and game ID to table
-            projectileCount.Add(name, 0);
 
             Network.Send(ss.Socket, ss.ID + "\n" + world.WorldSize + "\n");
             clients.Add(ss);
@@ -186,8 +189,8 @@ namespace Server {
                     if (fire) {
                         if (ship.Fire(shotDelay * msPerFrame)) {
                             world.AddProjectile(ship.id, ship.Loc.GetX(), ship.Loc.GetY(), ship.Dir.GetX(), ship.Dir.GetY());
-                            //TODO - Update accuracy (hits/projectile count)
-                            projectileCount[ship.Name]++;
+                            //DB - increase ShotsFired
+                            ship.ShotsFired++;
                         }
                     }
                     if (r > l) {
@@ -337,15 +340,13 @@ namespace Server {
                                 if ((ship.Loc - projectile.Loc).Length() < shipSize) {
                                     ship.HP--;
                                     projectile.Alive = false;
-                                    //TODO - Update accuracy (hits/projectile count)                                    
+                                    //DB - increment Hits                                  
                                     Ship shooter = world.GetShip(projectile.Owner);
-                                    hits[shooter.Name]++;
+                                    shooter.Hits++;
 
                                     if (ship.HP == 0) {
                                         world.AddPoint(projectile.Owner);
                                         new Thread(() => Respawn(ship)).Start();
-                                        //TODO - Update max score
-                                        scores[shooter.Name]++;
                                     }
                                 }
                             }
@@ -438,6 +439,97 @@ namespace Server {
                     }
                 }
             }
+        }
+        public static void WritePlayerData(int gameID)
+        {
+            foreach(Ship s in world.GetShips())
+            {
+                if(s.ShotsFired !=0)
+                    s.Accuracy = s.Hits / s.ShotsFired;
+                else
+                {
+                    s.Accuracy = 0;
+                }
+
+                // Connect to the DB
+                using (MySqlConnection conn = new MySqlConnection(connectionString))
+                {
+                    try
+                    {
+                        // Open a connection
+                        conn.Open();
+                        // Create a command
+                        MySqlCommand command = conn.CreateCommand();
+                        String playerName = s.Name;
+                        command.CommandText = $"insert into StarwarsPlayers(Name, GameID, Score, Accuracy) values('{playerName}', {gameID}, {s.Score}, {s.Accuracy});";
+                        // Execute the command and cycle through the DataReader object
+                        command.ExecuteReader();
+                        
+                        conn.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+            } 
+        }
+
+        public static int WriteGameData()
+        {
+            int gameID = -1;
+            // Connect to the DB
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    // Open a connection
+                    conn.Open();
+                    // Create a command
+                    MySqlCommand command = conn.CreateCommand();
+                    command.CommandText = "insert into StarwarsGames(Duration) values ("+ duration +");";
+                    // Execute the command and cycle through the DataReader object
+                    command.ExecuteReader();
+
+                    gameID = Convert.ToInt32(command.LastInsertedId);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    gameID = -1;
+                }
+            }
+            return gameID;
+
+        }
+        public static void GetGameID()
+        {
+            int gameID;
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    // Open a connection
+                    conn.Open();
+                    // Create a command
+                    MySqlCommand command = conn.CreateCommand();
+
+                    command.CommandText = "SELECT LAST_INSERT_ID() gameID;";
+                    command.ExecuteNonQuery();
+                    object game_ID = command.LastInsertedId;
+                    conn.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    gameID = -1;
+                }
+            }
+        }
+
+        static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            Console.WriteLine("exiting");
         }
         //add methods here
     }

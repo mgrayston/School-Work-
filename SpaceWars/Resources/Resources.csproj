@@ -41,6 +41,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Libraries\MySql.Data.dll" />
     <Content Include="Libraries\SpaceWarsClient\CommonDefs.dll" />
     <Content Include="Libraries\SpaceWarsClient\GameController.dll" />
     <Content Include="Libraries\SpaceWarsClient\Network_Support.dll" />

@@ -64,6 +64,22 @@ namespace Model {
         /// </summary>
         private int toTurn;
 
+        /// <summary>
+        /// Tracks the number of times the ship hits an opponent with a projectile
+        /// </summary>
+        private int hits;
+
+        /// <summary>
+        /// Tracks number of shots fired
+        /// </summary>
+        private int shotsFired;
+
+        /// <summary>
+        /// Tracks the accuracy of the ship's shooting
+        /// </summary>
+        private int accuracy;
+
+
         public Ship() : this(-1, "", 0, 0) { }
 
         public Ship(int ID, string name, int x, int y) {
@@ -106,5 +122,11 @@ namespace Model {
         public Vector2D Velocity { get => velocity; set => velocity = value; }
         public bool Connected { get => connected; set => connected = value; }
         public int ToTurn { get => toTurn; set => toTurn = value; }
+
+        //For database tracking
+        public int Hits { get => hits; set => hits = value; }
+        public int ShotsFired { get => shotsFired; set => shotsFired = value; }
+        public int Accuracy { get => accuracy; set => accuracy = value; }
+
     }
 }

@@ -8,22 +8,22 @@
   <StarSize>35</StarSize>
   <ShipSize>20</ShipSize>
   <TurningRate>2</TurningRate><!--This is in degrees-->
-  <Mode>MovingStars</Mode><!--Options are "Default" or "MovingStars"-->
+  <Mode>Default</Mode><!--Options are "Default" or "MovingStars"-->
 
   <Star>
     <x>-100</x>
     <y>0</y>
     <mass>0.03</mass>
   </Star>
-  <Star>
+  <!--<Star>
     <x>200</x>
     <y>100</y>
     <mass>0.015</mass>
-  </Star>
+  </Star>-->
 
-  <Star>
+  <!--<Star>
     <x>500</x>
     <y>-300</y>
     <mass>0.07</mass>
-  </Star>
+  </Star>-->
 </SpaceSettings>
